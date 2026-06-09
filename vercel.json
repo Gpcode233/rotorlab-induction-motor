@@ -1,9 +1,10 @@
 {
-  "outputDirectory": "public",
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "rewrites": [
-    { "source": "/socket.io/:path*", "destination": "/index.html" },
-    { "source": "/:path*", "destination": "/index.html" }
+  "version": 2,
+  "builds": [
+    { "src": "public/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/(.*\\.(?:css|js|png|jpg|jpeg|svg|ico|webp))", "dest": "/public/$1" },
+    { "src": "/.*", "dest": "/public/index.html" }
   ]
 }
