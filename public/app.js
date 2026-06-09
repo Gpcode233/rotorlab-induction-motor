@@ -293,7 +293,8 @@ function startHostedSimulation() {
     const dt = .2;
     state.elapsedSeconds += dt;
     if (state.running) {
-      const error = state.config.targetRpm - state.actualRpm;
+      const feedbackRpm = state.sampleCount > 0 ? latest?.filteredRpm ?? state.actualRpm : state.actualRpm;
+      const error = state.config.targetRpm - feedbackRpm;
       state.integral = clamp(state.integral + error * dt, -8500, 8500);
       const derivative = (error - state.previousError) / dt;
       const pid = state.config.kp * error + state.config.ki * state.integral + state.config.kd * derivative;

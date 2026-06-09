@@ -5,6 +5,10 @@ real-time monitoring, VFD-style control, PID regulation, FIR noise filtering,
 stability analysis, authentication, and local JSON persistence without requiring
 physical motor hardware.
 
+For a beginner-first explanation of the motor theory, calculations, complete
+codebase, demonstration, and defense questions, read
+[`STUDY_GUIDE.md`](STUDY_GUIDE.md).
+
 ## Run the Project
 
 Requirements: Node.js 18 or newer.

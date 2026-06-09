@@ -70,7 +70,8 @@ class MotorSimulation {
     this.elapsedSeconds += dt;
 
     if (this.running) {
-      const error = this.config.targetRpm - this.actualRpm;
+      const feedbackRpm = this.sampleCount > 0 ? this.filteredRpm : this.actualRpm;
+      const error = this.config.targetRpm - feedbackRpm;
       this.integral = clamp(this.integral + error * dt, -8500, 8500);
       const derivative = (error - this.previousError) / dt;
       const pid = this.config.kp * error + this.config.ki * this.integral + this.config.kd * derivative;
