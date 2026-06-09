@@ -1,0 +1,9 @@
+{
+  "outputDirectory": "public",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/socket.io/:path*", "destination": "/index.html" },
+    { "source": "/:path*", "destination": "/index.html" }
+  ]
+}

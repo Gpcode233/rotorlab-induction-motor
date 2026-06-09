@@ -1,0 +1,28 @@
+[
+  {
+    "id": "im-4p-22kw",
+    "name": "Industrial 3-Phase Motor",
+    "ratedPowerKw": 2.2,
+    "ratedVoltage": 415,
+    "frequency": 50,
+    "poles": 4,
+    "ratedSpeedRpm": 1440,
+    "ratedTorqueNm": 14.6,
+    "statorResistanceOhm": 3.2,
+    "rotorResistanceOhm": 2.1,
+    "inertiaKgM2": 0.018
+  },
+  {
+    "id": "im-6p-4kw",
+    "name": "High-Torque Pump Motor",
+    "ratedPowerKw": 4,
+    "ratedVoltage": 415,
+    "frequency": 50,
+    "poles": 6,
+    "ratedSpeedRpm": 960,
+    "ratedTorqueNm": 39.8,
+    "statorResistanceOhm": 2.4,
+    "rotorResistanceOhm": 1.7,
+    "inertiaKgM2": 0.032
+  }
+]

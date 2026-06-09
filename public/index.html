@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Real-time induction motor speed control and monitoring simulator">
+  <title>RotorLab | Induction Motor Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="auth-shell" id="authShell">
+    <section class="auth-intro">
+      <p class="eyebrow">ELECTRICAL MACHINES LAB / 01</p>
+      <h1>Observe what the motor is doing. Control what it does next.</h1>
+      <p>Real-time PID speed control, FIR sensor filtering, and stability analysis for a simulated three-phase induction motor.</p>
+      <div class="motor-mark" aria-hidden="true">
+        <span class="motor-ring ring-one"></span>
+        <span class="motor-ring ring-two"></span>
+        <span class="motor-core">M</span>
+        <span class="pulse-line"></span>
+      </div>
+    </section>
+    <section class="auth-panel">
+      <div class="auth-form-wrap">
+        <p class="brand"><span>R</span> ROTORLAB</p>
+        <h2 id="authTitle">Access control station</h2>
+        <p class="muted" id="authSubtitle">Sign in to operate and save motor experiments.</p>
+        <form id="authForm">
+          <label id="nameField" class="hidden">Full name
+            <input id="nameInput" autocomplete="name" placeholder="Student name">
+          </label>
+          <label>Email address
+            <input id="emailInput" type="email" autocomplete="email" placeholder="student@example.com" required>
+          </label>
+          <label>Password
+            <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Minimum 4 characters" required minlength="4">
+          </label>
+          <p class="form-error" id="authError"></p>
+          <button class="primary-btn full" type="submit" id="authSubmit">Sign in</button>
+        </form>
+        <button class="text-btn" id="authToggle">New operator? Create an account</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="app-shell hidden" id="appShell">
+    <header class="topbar">
+      <p class="brand"><span>R</span> ROTORLAB</p>
+      <nav>
+        <button class="nav-link active" data-section="control">Control</button>
+        <button class="nav-link" data-section="analysis">Analysis</button>
+        <button class="nav-link" data-section="applications">Applications</button>
+      </nav>
+      <div class="operator">
+        <span class="connection-dot"></span>
+        <span id="operatorName">Operator</span>
+        <button class="icon-btn" id="logoutBtn" title="Sign out">↗</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="controlSection" class="page-section">
+        <div class="workspace-heading">
+          <div>
+            <p class="eyebrow">LIVE CONTROL STATION</p>
+            <h1>Induction motor <span id="runState">offline</span></h1>
+          </div>
+          <div class="run-actions">
+            <button class="secondary-btn" id="resetBtn">Reset</button>
+            <button class="primary-btn" id="startStopBtn"><span class="play-icon">▶</span> Start motor</button>
+          </div>
+        </div>
+
+        <div class="telemetry">
+          <div class="speed-readout">
+            <p class="metric-label">FILTERED ROTOR SPEED</p>
+            <div><strong id="filteredRpm">0</strong><span>RPM</span></div>
+            <p class="speed-delta" id="speedDelta">Target 1,400 RPM</p>
+          </div>
+          <div class="metric">
+            <p class="metric-label">RAW SENSOR</p>
+            <strong id="rawRpm">0</strong><span>RPM</span>
+          </div>
+          <div class="metric">
+            <p class="metric-label">SLIP</p>
+            <strong id="slip">100.0</strong><span>%</span>
+          </div>
+          <div class="metric">
+            <p class="metric-label">STABILITY</p>
+            <strong class="status-text" id="stability">STOPPED</strong>
+            <span class="status-line"><i id="stabilityDot"></i><b id="statusDetail">System idle</b></span>
+          </div>
+        </div>
+
+        <div class="control-grid">
+          <section class="chart-region">
+            <div class="section-heading">
+              <div>
+                <h2>Speed response</h2>
+                <p>Raw sensor signal compared with FIR-filtered output and setpoint.</p>
+              </div>
+              <div class="legend">
+                <span><i class="target-key"></i>Target</span>
+                <span><i class="filtered-key"></i>Filtered</span>
+                <span><i class="raw-key"></i>Raw</span>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="speedChart"></canvas>
+            </div>
+            <div class="chart-footer">
+              <span>0 RPM</span>
+              <span id="elapsedTime">00:00 elapsed</span>
+              <span id="syncSpeed">1,500 RPM synchronous</span>
+            </div>
+          </section>
+
+          <aside class="controls-region">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">VFD + PID</p>
+                <h2>Control inputs</h2>
+              </div>
+            </div>
+            <label>Target speed <output id="targetOutput">1400 RPM</output>
+              <input id="targetInput" type="range" min="0" max="1470" value="1400" step="10">
+            </label>
+            <label>Load torque <output id="loadOutput">8.0 Nm</output>
+              <input id="loadInput" type="range" min="0" max="20" value="8" step="0.5">
+            </label>
+            <div class="pid-grid">
+              <label>Kp<input id="kpInput" type="number" min="0" max="3" step="0.01" value="0.72"></label>
+              <label>Ki<input id="kiInput" type="number" min="0" max="1" step="0.01" value="0.18"></label>
+              <label>Kd<input id="kdInput" type="number" min="0" max="1" step="0.01" value="0.06"></label>
+            </div>
+            <div class="filter-row">
+              <div>
+                <strong>FIR noise filter</strong>
+                <span id="filterDescription">7-tap moving average</span>
+              </div>
+              <button class="toggle active" id="filterToggle" aria-label="Toggle FIR filter"><i></i></button>
+            </div>
+            <button class="secondary-btn full warning-btn" id="disturbanceBtn">Apply load disturbance</button>
+          </aside>
+        </div>
+
+        <section class="parameters">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">SELECTED MACHINE</p>
+              <h2 id="motorName">Industrial 3-Phase Motor</h2>
+            </div>
+            <span class="machine-tag">IM-4P-2.2KW</span>
+          </div>
+          <div class="parameter-list" id="parameterList"></div>
+        </section>
+      </section>
+
+      <section id="analysisSection" class="page-section hidden">
+        <div class="workspace-heading">
+          <div><p class="eyebrow">PERFORMANCE</p><h1>Stability analysis</h1></div>
+          <button class="primary-btn" id="saveRunBtn">Save current experiment</button>
+        </div>
+        <div class="analysis-metrics">
+          <article><span>Speed error</span><strong id="analysisError">0 RPM</strong><p>Difference between target and filtered speed.</p></article>
+          <article><span>Overshoot</span><strong id="analysisOvershoot">0%</strong><p>Maximum speed above the target setpoint.</p></article>
+          <article><span>Settling time</span><strong id="analysisSettling">—</strong><p>Time required to remain within ±2% of target.</p></article>
+          <article><span>Mean squared error</span><strong id="analysisMse">0</strong><p>Average squared tracking error for this run.</p></article>
+        </div>
+        <div class="theory-grid">
+          <article>
+            <p class="eyebrow">CONTROL MODEL</p>
+            <h2>PID speed regulation</h2>
+            <code>u(t) = Kp·e(t) + Ki∫e(t)dt + Kd·de(t)/dt</code>
+            <p>The proportional term reacts to present error, integral removes steady-state error, and derivative limits rapid oscillation. The controller adjusts the simulated VFD command.</p>
+          </article>
+          <article>
+            <p class="eyebrow">SIGNAL CONDITIONING</p>
+            <h2>Finite impulse response filter</h2>
+            <code>y[n] = Σ b[k]x[n-k]</code>
+            <p>Seven equal coefficients average recent sensor samples. FIR filters are inherently stable because they have no feedback and reduce high-frequency measurement noise.</p>
+          </article>
+        </div>
+        <section class="history">
+          <div class="section-heading"><div><p class="eyebrow">LOCAL STORAGE</p><h2>Saved experiments</h2></div></div>
+          <div id="historyList" class="history-list"><p class="empty-state">No saved runs yet.</p></div>
+        </section>
+      </section>
+
+      <section id="applicationsSection" class="page-section hidden">
+        <div class="workspace-heading"><div><p class="eyebrow">INDUSTRIAL USE</p><h1>Where speed control matters</h1></div></div>
+        <div class="applications-list">
+          <article><span>01</span><div><h2>Conveyor systems</h2><p>Maintains production-line speed as material weight changes, preventing jams and inconsistent processing.</p></div></article>
+          <article><span>02</span><div><h2>Pumps and compressors</h2><p>Matches flow or pressure to demand, reducing throttling losses and electrical energy consumption.</p></div></article>
+          <article><span>03</span><div><h2>HVAC fans</h2><p>Regulates airflow based on temperature and occupancy while reducing noise and mechanical wear.</p></div></article>
+          <article><span>04</span><div><h2>Elevators and machine tools</h2><p>Provides controlled acceleration, steady operation, and smooth deceleration for safe precision motion.</p></div></article>
+        </div>
+      </section>
+    </main>
+    <footer><span>ROTORLAB 1.0</span><span>Local API • Socket.IO • FIR • PID</span><span id="footerClock"></span></footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script>
+    if (["localhost", "127.0.0.1"].includes(location.hostname)) {
+      document.write('<script src="/socket.io/socket.io.js"><\/script>');
+    }
+  </script>
+  <script src="/app.js"></script>
+</body>
+</html>
