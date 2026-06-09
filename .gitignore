@@ -1,5 +1,6 @@
 node_modules/
 .env
 npm-debug.log*
+STUDY_GUIDE.md
 
 .vercel
