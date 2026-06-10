@@ -71,6 +71,7 @@
           <div class="run-actions">
             <button class="secondary-btn" id="resetBtn">Reset</button>
             <button class="primary-btn" id="startStopBtn"><span class="play-icon">▶</span> Start motor</button>
+            <button class="secondary-btn" id="resetBtn">Pause</button>
           </div>
         </div>
 
@@ -125,11 +126,11 @@
                 <h2>Control inputs</h2>
               </div>
             </div>
-            <label>Target speed <output id="targetOutput">1400 RPM</output>
+            <label>Target speed <output id="targetOutput">2400 RPM</output>
               <input id="targetInput" type="range" min="0" max="1470" value="1400" step="10">
             </label>
-            <label>Load torque <output id="loadOutput">8.0 Nm</output>
-              <input id="loadInput" type="range" min="0" max="20" value="8" step="0.5">
+            <label>Load torque <output id="loadOutput">300.0 Nm</output>
+              <input id="loadInput" type="range" min="0" max="20" value="8" step="50">
             </label>
             <div class="pid-grid">
               <label>Kp<input id="kpInput" type="number" min="0" max="3" step="0.01" value="0.72"></label>
