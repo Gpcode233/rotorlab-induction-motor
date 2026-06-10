@@ -117,7 +117,7 @@ main { margin: 0 auto; max-width: 1600px; padding: 52px clamp(20px, 4vw, 64px) 8
 .legend i { display: inline-block; height: 2px; width: 14px; }
 .target-key { background: #68706e; }
 .filtered-key { background: var(--amber); }
-.raw-key { background: #607f76; }
+.raw-key { background: #02bd88; }
 .chart-wrap { height: 360px; margin-top: 28px; width: 100%; }
 #speedChart { height: 100%; width: 100%; }
 .chart-footer { color: var(--muted); display: flex; font-family: var(--mono); font-size: .6rem; justify-content: space-between; }
