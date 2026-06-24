@@ -96,7 +96,7 @@ main { margin: 0 auto; max-width: 1600px; padding: 52px clamp(20px, 4vw, 64px) 8
 .run-actions { display: flex; gap: 9px; }
 .play-icon { font-size: .6rem; margin-right: 7px; }
 
-.telemetry { border-bottom: 1px solid var(--line); border-top: 1px solid var(--line); display: grid; grid-template-columns: 2fr repeat(3, 1fr); margin-bottom: 54px; }
+.telemetry { border-bottom: 1px solid var(--line); border-top: 1px solid var(--line); display: grid; grid-template-columns: 2fr repeat(5, 1fr); margin-bottom: 54px; }
 .speed-readout, .metric { min-height: 150px; padding: 28px 28px 25px 0; }
 .metric { border-left: 1px solid var(--line); padding-left: 28px; }
 .speed-readout strong { font-family: var(--mono); font-size: clamp(3.4rem, 6vw, 6.3rem); font-weight: 500; letter-spacing: -.08em; line-height: .9; }
@@ -131,6 +131,9 @@ input[type="range"] { accent-color: var(--amber); display: block; margin-top: 14
 .filter-row { align-items: center; border-bottom: 1px solid var(--line); border-top: 1px solid var(--line); display: flex; justify-content: space-between; margin: 20px 0; padding: 20px 0; }
 .filter-row strong, .filter-row span { display: block; font-size: .75rem; }
 .filter-row span { color: var(--muted); font-family: var(--mono); font-size: .6rem; margin-top: 5px; }
+.filter-grid { display: grid; gap: 9px; grid-template-columns: 1fr; margin-bottom: 20px; }
+.filter-grid label { margin: 0; }
+.filter-grid input { font-family: var(--mono); padding: 10px; }
 .toggle { background: #303536; border: 0; border-radius: 20px; height: 24px; padding: 3px; width: 43px; }
 .toggle i { background: #909694; border-radius: 50%; display: block; height: 18px; transition: transform .2s; width: 18px; }
 .toggle.active { background: var(--amber-soft); }
@@ -193,7 +196,7 @@ footer { border-top: 1px solid var(--line); color: var(--muted); display: flex; 
   .telemetry { grid-template-columns: 1fr 1fr; }
   .speed-readout { min-height: 130px; }
   .metric { min-height: 120px; padding: 20px 12px; }
-  .metric:nth-child(4) { border-left: 1px solid var(--line); }
+  .metric:nth-child(2n) { border-left: 0; }
   .speed-readout strong { font-size: 3.8rem; }
   .legend { display: none; }
   .chart-wrap { height: 280px; }

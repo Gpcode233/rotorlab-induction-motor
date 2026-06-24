@@ -1,12 +1,17 @@
 const DEFAULT_CONFIG = {
   targetRpm: 1400,
-  loadTorqueNm: 8,
+  loadTorqueNm: 50,
   kp: 0.72,
   ki: 0.18,
   kd: 0.06,
   filterEnabled: true,
   filterTaps: 7,
+  samplingFrequencyHz: 5,
+  passBandFrequencyHz: 0.8,
+  stopBandFrequencyHz: 2,
 };
+
+const MAX_SPEED_RPM = 3000;
 
 class MotorSimulation {
   constructor(motor) {
@@ -30,18 +35,43 @@ class MotorSimulation {
     this.stableSamples = 0;
     this.settlingTimeSeconds = null;
     this.disturbance = 0;
+    this.paused = false;
   }
 
   start() {
     this.running = true;
+    this.paused = false;
   }
 
   stop() {
     this.running = false;
+    this.paused = false;
+  }
+
+  pause() {
+    if (this.running) {
+      this.paused = true;
+    }
+  }
+
+  resume() {
+    if (this.running) {
+      this.paused = false;
+    }
   }
 
   updateConfig(patch) {
-    const numericKeys = ["targetRpm", "loadTorqueNm", "kp", "ki", "kd", "filterTaps"];
+    const numericKeys = [
+      "targetRpm",
+      "loadTorqueNm",
+      "kp",
+      "ki",
+      "kd",
+      "filterTaps",
+      "samplingFrequencyHz",
+      "passBandFrequencyHz",
+      "stopBandFrequencyHz",
+    ];
     for (const key of numericKeys) {
       if (patch[key] !== undefined && Number.isFinite(Number(patch[key]))) {
         this.config[key] = Number(patch[key]);
@@ -50,23 +80,39 @@ class MotorSimulation {
     if (patch.filterEnabled !== undefined) {
       this.config.filterEnabled = Boolean(patch.filterEnabled);
     }
-    this.config.targetRpm = clamp(this.config.targetRpm, 0, this.synchronousSpeed * 0.98);
-    this.config.loadTorqueNm = clamp(this.config.loadTorqueNm, 0, this.motor.ratedTorqueNm * 1.4);
+    this.config.targetRpm = clamp(this.config.targetRpm, 0, 3000);
+    this.config.loadTorqueNm = roundToStep(clamp(this.config.loadTorqueNm, 0, 300), 50);
     this.config.kp = clamp(this.config.kp, 0, 3);
     this.config.ki = clamp(this.config.ki, 0, 1);
     this.config.kd = clamp(this.config.kd, 0, 1);
     this.config.filterTaps = Math.round(clamp(this.config.filterTaps, 1, 25));
+    this.config.samplingFrequencyHz = clamp(this.config.samplingFrequencyHz, 1, 100);
+    const nyquist = this.config.samplingFrequencyHz / 2;
+    this.config.passBandFrequencyHz = clamp(this.config.passBandFrequencyHz, 0.1, nyquist - 0.1);
+    this.config.stopBandFrequencyHz = clamp(
+      this.config.stopBandFrequencyHz,
+      this.config.passBandFrequencyHz + 0.1,
+      nyquist
+    );
   }
 
   applyDisturbance() {
-    this.disturbance = this.motor.ratedTorqueNm * 0.48;
+    this.disturbance = 50;
   }
 
   get synchronousSpeed() {
     return (120 * this.motor.frequency) / this.motor.poles;
   }
 
+  get effectiveSynchronousSpeed() {
+    return Math.max(this.synchronousSpeed, this.config.targetRpm);
+  }
+
   step(dt = 0.2) {
+    if (this.paused) {
+      return this.snapshot();
+    }
+
     this.elapsedSeconds += dt;
 
     if (this.running) {
@@ -78,12 +124,12 @@ class MotorSimulation {
       this.previousError = error;
 
       const driveCommand = clamp(pid / 900, -0.3, 1);
-      const targetFromDrive = driveCommand * this.synchronousSpeed;
+      const targetFromDrive = driveCommand * MAX_SPEED_RPM;
       const loadRatio = (this.config.loadTorqueNm + this.disturbance) / this.motor.ratedTorqueNm;
       const loadLoss = loadRatio * 48;
       const timeConstant = 0.85 + this.motor.inertiaKgM2 * 10;
       const acceleration = (targetFromDrive - this.actualRpm - loadLoss) / timeConstant;
-      this.actualRpm = clamp(this.actualRpm + acceleration * dt, 0, this.synchronousSpeed * 1.03);
+      this.actualRpm = clamp(this.actualRpm + acceleration * dt, 0, MAX_SPEED_RPM * 1.03);
       this.disturbance *= 0.88;
     } else {
       this.actualRpm = Math.max(0, this.actualRpm - this.actualRpm * dt * 1.8);
@@ -120,16 +166,22 @@ class MotorSimulation {
 
   snapshot() {
     const error = this.config.targetRpm - this.filteredRpm;
-    const slip = this.synchronousSpeed
-      ? ((this.synchronousSpeed - this.actualRpm) / this.synchronousSpeed) * 100
+    const slipReference = this.effectiveSynchronousSpeed;
+    const slip = slipReference
+      ? ((slipReference - this.actualRpm) / slipReference) * 100
       : 0;
     const overshoot = this.config.targetRpm
       ? Math.max(0, ((this.maxRpm - this.config.targetRpm) / this.config.targetRpm) * 100)
       : 0;
     const errorPercent = this.config.targetRpm ? Math.abs(error) / this.config.targetRpm * 100 : 0;
     let stability = "stopped";
+    if (this.paused) {
+      stability = "paused";
+    }
     if (this.running) {
-      stability = errorPercent <= 2 && this.stableSamples >= 5
+      stability = this.paused
+        ? "paused"
+        : errorPercent <= 2 && this.stableSamples >= 5
         ? "stable"
         : errorPercent <= 8
           ? "settling"
@@ -139,12 +191,21 @@ class MotorSimulation {
     return {
       timestamp: Date.now(),
       running: this.running,
+      paused: this.paused,
       motor: this.motor,
       config: this.config,
+      filterSpec: {
+        samplingFrequencyHz: round(this.config.samplingFrequencyHz),
+        passBandFrequencyHz: round(this.config.passBandFrequencyHz),
+        stopBandFrequencyHz: round(this.config.stopBandFrequencyHz),
+        nyquistFrequencyHz: round(this.config.samplingFrequencyHz / 2),
+      },
       rawRpm: round(this.rawRpm),
       filteredRpm: round(this.filteredRpm),
       actualRpm: round(this.actualRpm),
       synchronousSpeed: round(this.synchronousSpeed),
+      effectiveSynchronousSpeed: round(this.effectiveSynchronousSpeed),
+      maxSpeedRpm: MAX_SPEED_RPM,
       slipPercent: round(slip),
       speedError: round(error),
       overshootPercent: round(overshoot),
@@ -162,6 +223,10 @@ function clamp(value, min, max) {
 
 function round(value) {
   return Math.round(value * 100) / 100;
+}
+
+function roundToStep(value, step) {
+  return Math.round(value / step) * step;
 }
 
 module.exports = { MotorSimulation, DEFAULT_CONFIG };

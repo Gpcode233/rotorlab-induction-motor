@@ -5,10 +5,6 @@ real-time monitoring, VFD-style control, PID regulation, FIR noise filtering,
 stability analysis, authentication, and local JSON persistence without requiring
 physical motor hardware.
 
-For a beginner-first explanation of the motor theory, calculations, complete
-codebase, demonstration, and defense questions, read
-[`STUDY_GUIDE.md`](STUDY_GUIDE.md).
-
 ## Run the Project
 
 Requirements: Node.js 18 or newer.
@@ -33,11 +29,15 @@ npm test
 3. Show that its synchronous speed is `120 × 50 / 4 = 1500 RPM`.
 4. Start the motor at a target of 1400 RPM.
 5. Point out the noisy raw sensor trace and smoother FIR-filtered trace.
-6. Apply a load disturbance and observe the speed fall temporarily.
-7. Explain how the PID controller restores the target speed.
-8. Change the load or PID gains and observe the stability metrics.
-9. Open Analysis and save the experiment.
-10. Open Applications and discuss industrial uses.
+6. Explain the FIR noise filter tap input, sampling frequency, pass band frequency, and stop band frequency.
+7. Increase the target speed up to the 3000 RPM maximum and show the chart scale.
+8. Increase the load in multiples of 50 Nm up to 300 Nm.
+9. Use Pause and Resume to freeze and continue the live simulation.
+10. Apply a load disturbance and observe the speed fall temporarily.
+11. Explain how the PID controller restores the target speed.
+12. Change the load or PID gains and observe the stability metrics.
+13. Open Analysis and save the experiment.
+14. Open Applications and discuss industrial uses.
 
 ## Architecture
 
@@ -94,7 +94,14 @@ target for consecutive samples.
 ## FIR Filter
 
 The speed sensor includes simulated random and periodic electrical noise. A
-seven-tap moving-average FIR filter is applied:
+seven-tap moving-average FIR filter is applied. The dashboard exposes these
+filter design values:
+
+- Noise filter taps: default `7`
+- Sampling frequency: default `5 Hz`
+- Pass band frequency: default `0.8 Hz`
+- Stop band frequency: default `2 Hz`
+- Nyquist frequency: `sampling frequency / 2`
 
 ```text
 y[n] = (x[n] + x[n-1] + ... + x[n-6]) / 7
@@ -103,6 +110,9 @@ y[n] = (x[n] + x[n-1] + ... + x[n-6]) / 7
 This filter reduces high-frequency noise. Because it has no feedback terms, it
 is inherently stable. The filter can be disabled from the dashboard to compare
 the raw and filtered signals.
+
+The motor speed target is limited to `3000 RPM`, and the speed chart is scaled
+against the same 3000 RPM maximum.
 
 ## API
 
@@ -114,6 +124,8 @@ the raw and filtered signals.
 | GET | `/api/simulation/status` | Read current telemetry |
 | POST | `/api/simulation/start` | Start the motor |
 | POST | `/api/simulation/stop` | Stop the motor |
+| POST | `/api/simulation/pause` | Pause the simulation |
+| POST | `/api/simulation/resume` | Resume the simulation |
 | PATCH | `/api/simulation/control` | Change target, load, PID, or FIR settings |
 | POST | `/api/simulation/disturbance` | Apply a temporary load |
 | GET/POST | `/api/performance` | Read or save experiment results |

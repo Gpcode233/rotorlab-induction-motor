@@ -18,7 +18,9 @@ $("authToggle").addEventListener("click", () => {
   registerMode = !registerMode;
   $("nameField").classList.toggle("hidden", !registerMode);
   $("authTitle").textContent = registerMode ? "Create operator account" : "Access control station";
-  $("authSubtitle").textContent = registerMode ? "Credentials are stored locally for this demonstration." : "Sign in to operate and save motor experiments.";
+  $("authSubtitle").textContent = registerMode
+    ? "Credentials are stored locally for this demonstration."
+    : "Sign in to operate and save motor experiments.";
   $("authSubmit").textContent = registerMode ? "Create account" : "Sign in";
   $("authToggle").textContent = registerMode ? "Already registered? Sign in" : "New operator? Create an account";
   $("authError").textContent = "";
@@ -31,6 +33,7 @@ $("authForm").addEventListener("submit", async (event) => {
     email: $("emailInput").value,
     password: $("passwordInput").value,
   };
+
   try {
     if (hostedDemo) {
       const accounts = JSON.parse(localStorage.getItem("rotorlab_accounts") || "[]");
@@ -51,6 +54,7 @@ $("authForm").addEventListener("submit", async (event) => {
       showApp();
       return;
     }
+
     const response = await fetch(`/api/auth/${registerMode ? "register" : "login"}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -87,25 +91,46 @@ document.querySelectorAll(".nav-link").forEach((button) => {
 $("startStopBtn").addEventListener("click", async () => {
   await api(`/api/simulation/${latest?.running ? "stop" : "start"}`, { method: "POST" });
 });
+
+$("pauseBtn").addEventListener("click", async () => {
+  if (!latest?.running) {
+    toast("Start the motor before pausing");
+    return;
+  }
+  await api(`/api/simulation/${latest.paused ? "resume" : "pause"}`, { method: "POST" });
+});
+
 $("resetBtn").addEventListener("click", async () => {
   await api("/api/simulation/reset", { method: "POST" });
   history.length = 0;
   toast("Simulation reset");
 });
+
 $("disturbanceBtn").addEventListener("click", async () => {
   await api("/api/simulation/disturbance", { method: "POST" });
   toast("Load disturbance applied");
 });
+
 $("filterToggle").addEventListener("click", () => {
   filterEnabled = !filterEnabled;
   $("filterToggle").classList.toggle("active", filterEnabled);
   queueControlUpdate();
 });
 
-["targetInput", "loadInput", "kpInput", "kiInput", "kdInput"].forEach((id) => {
+[
+  "targetInput",
+  "loadInput",
+  "kpInput",
+  "kiInput",
+  "kdInput",
+  "filterTapsInput",
+  "samplingFrequencyInput",
+  "passBandInput",
+  "stopBandInput",
+].forEach((id) => {
   $(id).addEventListener("input", () => {
     $("targetOutput").textContent = `${Number($("targetInput").value).toLocaleString()} RPM`;
-    $("loadOutput").textContent = `${Number($("loadInput").value).toFixed(1)} Nm`;
+    $("loadOutput").textContent = `${Number($("loadInput").value).toFixed(0)} Nm`;
     queueControlUpdate();
   });
 });
@@ -147,24 +172,36 @@ function render(data) {
   $("filteredRpm").textContent = Math.round(data.filteredRpm).toLocaleString();
   $("rawRpm").textContent = Math.round(data.rawRpm).toLocaleString();
   $("slip").textContent = data.slipPercent.toFixed(1);
+  $("powerRating").textContent = data.motor.ratedPowerKw;
+  $("ratedVoltage").textContent = data.motor.ratedVoltage;
   $("stability").textContent = data.stability.toUpperCase();
-  $("speedDelta").textContent = `Target ${config.targetRpm.toLocaleString()} RPM • Error ${Math.round(data.speedError)} RPM`;
-  $("runState").textContent = data.running ? "online" : "offline";
-  $("startStopBtn").innerHTML = data.running ? "■ Stop motor" : '<span class="play-icon">▶</span> Start motor';
+  $("speedDelta").textContent = `Target ${config.targetRpm.toLocaleString()} RPM | Error ${Math.round(data.speedError)} RPM`;
+  $("runState").textContent = data.paused ? "paused" : data.running ? "online" : "offline";
+  $("startStopBtn").textContent = data.running ? "Stop motor" : "Start motor";
+  $("pauseBtn").textContent = data.paused ? "Resume" : "Pause";
+  $("pauseBtn").disabled = !data.running;
   $("stabilityDot").style.background = data.stability === "stable" ? "var(--green)" : data.running ? "var(--amber)" : "var(--muted)";
-  $("statusDetail").textContent = data.stability === "stable" ? "Within ±2% target" : data.running ? "Controller active" : "System idle";
+  $("statusDetail").textContent = data.paused
+    ? "Simulation paused"
+    : data.stability === "stable"
+      ? "Within +/-2% target"
+      : data.running
+        ? "Controller active"
+        : "System idle";
   $("elapsedTime").textContent = `${formatTime(data.elapsedSeconds)} elapsed`;
-  $("syncSpeed").textContent = `${data.synchronousSpeed.toLocaleString()} RPM synchronous`;
+  $("syncSpeed").textContent = `${data.maxSpeedRpm.toLocaleString()} RPM chart max`;
+  $("filterDescription").textContent =
+    `${config.filterTaps}-tap filter | Fs ${config.samplingFrequencyHz} Hz | Pass ${config.passBandFrequencyHz} Hz | Stop ${config.stopBandFrequencyHz} Hz`;
   $("analysisError").textContent = `${data.speedError.toFixed(1)} RPM`;
   $("analysisOvershoot").textContent = `${data.overshootPercent.toFixed(2)}%`;
-  $("analysisSettling").textContent = data.settlingTimeSeconds === null ? "—" : `${data.settlingTimeSeconds.toFixed(1)} s`;
+  $("analysisSettling").textContent = data.settlingTimeSeconds === null ? "-" : `${data.settlingTimeSeconds.toFixed(1)} s`;
   $("analysisMse").textContent = Math.round(data.meanSquaredError).toLocaleString();
 
   const motor = data.motor;
   $("motorName").textContent = motor.name;
   $("parameterList").innerHTML = [
-    ["RATED POWER", `${motor.ratedPowerKw} kW`],
-    ["VOLTAGE", `${motor.ratedVoltage} V`],
+    ["POWER RATING", `${motor.ratedPowerKw} kW`],
+    ["RATED VOLTAGE", `${motor.ratedVoltage} V`],
     ["FREQUENCY", `${motor.frequency} Hz`],
     ["POLES", motor.poles],
     ["RATED SPEED", `${motor.ratedSpeedRpm} RPM`],
@@ -182,7 +219,7 @@ function drawChart() {
 
   const width = rect.width;
   const height = rect.height;
-  const maxRpm = Math.max(1600, latest?.synchronousSpeed || 1500);
+  const maxRpm = latest?.maxSpeedRpm || 3000;
   ctx.strokeStyle = "#202526";
   ctx.lineWidth = 1;
   for (let row = 0; row <= 4; row += 1) {
@@ -233,7 +270,10 @@ function queueControlUpdate() {
         ki: $("kiInput").value,
         kd: $("kdInput").value,
         filterEnabled,
-        filterTaps: 7,
+        filterTaps: $("filterTapsInput").value,
+        samplingFrequencyHz: $("samplingFrequencyInput").value,
+        passBandFrequencyHz: $("passBandInput").value,
+        stopBandFrequencyHz: $("stopBandInput").value,
       }),
     });
   }, 120);
@@ -276,21 +316,60 @@ async function api(url, options = {}) {
 
 function startHostedSimulation() {
   const motor = {
-    id: "im-4p-22kw", name: "Industrial 3-Phase Motor", ratedPowerKw: 2.2,
-    ratedVoltage: 415, frequency: 50, poles: 4, ratedSpeedRpm: 1440,
-    ratedTorqueNm: 14.6, statorResistanceOhm: 3.2, rotorResistanceOhm: 2.1,
+    id: "im-4p-22kw",
+    name: "Industrial 3-Phase Motor",
+    ratedPowerKw: 2.2,
+    ratedVoltage: 415,
+    frequency: 50,
+    poles: 4,
+    ratedSpeedRpm: 1440,
+    ratedTorqueNm: 14.6,
+    statorResistanceOhm: 3.2,
+    rotorResistanceOhm: 2.1,
     inertiaKgM2: 0.018,
   };
   const state = {
-    running: false, actualRpm: 0, integral: 0, previousError: 0, samples: [],
-    elapsedSeconds: 0, maxRpm: 0, squaredErrorSum: 0, sampleCount: 0,
-    stableSamples: 0, settlingTimeSeconds: null, disturbance: 0,
-    motor, config: { targetRpm: 1400, loadTorqueNm: 8, kp: .72, ki: .18, kd: .06, filterEnabled: true, filterTaps: 7 },
+    running: false,
+    paused: false,
+    actualRpm: 0,
+    rawRpm: 0,
+    filteredRpm: 0,
+    integral: 0,
+    previousError: 0,
+    samples: [],
+    elapsedSeconds: 0,
+    maxRpm: 0,
+    squaredErrorSum: 0,
+    sampleCount: 0,
+    stableSamples: 0,
+    settlingTimeSeconds: null,
+    disturbance: 0,
+    motor,
+    config: {
+      targetRpm: 1400,
+      loadTorqueNm: 50,
+      kp: .72,
+      ki: .18,
+      kd: .06,
+      filterEnabled: true,
+      filterTaps: 7,
+      samplingFrequencyHz: 5,
+      passBandFrequencyHz: .8,
+      stopBandFrequencyHz: 2,
+    },
   };
   window.hostedMotor = state;
 
   setInterval(() => {
     const dt = .2;
+    if (state.paused) {
+      const snapshot = makeHostedSnapshot(state, state.rawRpm, state.filteredRpm);
+      latest = snapshot;
+      render(snapshot);
+      drawChart();
+      return;
+    }
+
     state.elapsedSeconds += dt;
     if (state.running) {
       const feedbackRpm = state.sampleCount > 0 ? latest?.filteredRpm ?? state.actualRpm : state.actualRpm;
@@ -301,36 +380,29 @@ function startHostedSimulation() {
       state.previousError = error;
       const drive = clamp(pid / 900, -.3, 1);
       const loadLoss = ((state.config.loadTorqueNm + state.disturbance) / motor.ratedTorqueNm) * 48;
-      state.actualRpm = clamp(state.actualRpm + (drive * 1500 - state.actualRpm - loadLoss) / 1.03 * dt, 0, 1545);
+      state.actualRpm = clamp(state.actualRpm + (drive * 3000 - state.actualRpm - loadLoss) / 1.03 * dt, 0, 3090);
       state.disturbance *= .88;
     } else {
       state.actualRpm = Math.max(0, state.actualRpm - state.actualRpm * dt * 1.8);
       state.integral *= .9;
     }
+
     const rawRpm = Math.max(0, state.actualRpm + (Math.random() - .5) * 38 + Math.sin(state.elapsedSeconds * 13) * 8);
     state.samples.push(rawRpm);
     if (state.samples.length > 25) state.samples.shift();
     const recent = state.samples.slice(-state.config.filterTaps);
     const filteredRpm = state.config.filterEnabled ? recent.reduce((sum, value) => sum + value, 0) / recent.length : rawRpm;
     const speedError = state.config.targetRpm - filteredRpm;
+    state.rawRpm = rawRpm;
+    state.filteredRpm = filteredRpm;
     state.maxRpm = Math.max(state.maxRpm, filteredRpm);
     state.squaredErrorSum += speedError ** 2;
     state.sampleCount += 1;
     const tolerance = Math.max(state.config.targetRpm * .02, 10);
     state.stableSamples = state.running && Math.abs(speedError) <= tolerance ? state.stableSamples + 1 : 0;
     if (state.stableSamples >= 15 && state.settlingTimeSeconds === null) state.settlingTimeSeconds = state.elapsedSeconds - 2.8;
-    const errorPercent = state.config.targetRpm ? Math.abs(speedError) / state.config.targetRpm * 100 : 0;
-    const snapshot = {
-      timestamp: Date.now(), running: state.running, motor, config: { ...state.config },
-      rawRpm: round(rawRpm), filteredRpm: round(filteredRpm), actualRpm: round(state.actualRpm),
-      synchronousSpeed: 1500, slipPercent: round((1500 - state.actualRpm) / 15),
-      speedError: round(speedError),
-      overshootPercent: round(Math.max(0, (state.maxRpm - state.config.targetRpm) / state.config.targetRpm * 100)),
-      settlingTimeSeconds: state.settlingTimeSeconds === null ? null : round(state.settlingTimeSeconds),
-      meanSquaredError: round(state.squaredErrorSum / state.sampleCount),
-      stability: !state.running ? "stopped" : errorPercent <= 2 && state.stableSamples >= 5 ? "stable" : errorPercent <= 8 ? "settling" : "correcting",
-      elapsedSeconds: round(state.elapsedSeconds),
-    };
+
+    const snapshot = makeHostedSnapshot(state, rawRpm, filteredRpm);
     latest = snapshot;
     history.push(snapshot);
     if (history.length > 180) history.shift();
@@ -341,27 +413,65 @@ function startHostedSimulation() {
 
 async function hostedApi(url, options) {
   const state = window.hostedMotor;
-  if (url.endsWith("/start")) state.running = true;
-  if (url.endsWith("/stop")) state.running = false;
-  if (url.endsWith("/reset")) {
-    Object.assign(state, { running: false, actualRpm: 0, integral: 0, previousError: 0, samples: [], elapsedSeconds: 0, maxRpm: 0, squaredErrorSum: 0, sampleCount: 0, stableSamples: 0, settlingTimeSeconds: null, disturbance: 0 });
+  if (url.endsWith("/start")) {
+    state.running = true;
+    state.paused = false;
   }
-  if (url.endsWith("/disturbance")) state.disturbance = state.motor.ratedTorqueNm * .48;
+  if (url.endsWith("/stop")) {
+    state.running = false;
+    state.paused = false;
+  }
+  if (url.endsWith("/pause") && state.running) state.paused = true;
+  if (url.endsWith("/resume") && state.running) state.paused = false;
+  if (url.endsWith("/reset")) {
+    Object.assign(state, {
+      running: false,
+      paused: false,
+      actualRpm: 0,
+      rawRpm: 0,
+      filteredRpm: 0,
+      integral: 0,
+      previousError: 0,
+      samples: [],
+      elapsedSeconds: 0,
+      maxRpm: 0,
+      squaredErrorSum: 0,
+      sampleCount: 0,
+      stableSamples: 0,
+      settlingTimeSeconds: null,
+      disturbance: 0,
+    });
+  }
+  if (url.endsWith("/disturbance")) state.disturbance = 50;
   if (url.endsWith("/control")) {
     const patch = JSON.parse(options.body || "{}");
+    const samplingFrequencyHz = clamp(Number(patch.samplingFrequencyHz), 1, 100);
+    const nyquist = samplingFrequencyHz / 2;
+    const passBandFrequencyHz = clamp(Number(patch.passBandFrequencyHz), .1, nyquist - .1);
     Object.assign(state.config, {
-      targetRpm: Number(patch.targetRpm), loadTorqueNm: Number(patch.loadTorqueNm),
-      kp: Number(patch.kp), ki: Number(patch.ki), kd: Number(patch.kd),
+      targetRpm: Number(patch.targetRpm),
+      loadTorqueNm: roundToStep(clamp(Number(patch.loadTorqueNm), 0, 300), 50),
+      kp: Number(patch.kp),
+      ki: Number(patch.ki),
+      kd: Number(patch.kd),
       filterEnabled: Boolean(patch.filterEnabled),
+      filterTaps: Math.round(clamp(Number(patch.filterTaps), 1, 25)),
+      samplingFrequencyHz,
+      passBandFrequencyHz,
+      stopBandFrequencyHz: clamp(Number(patch.stopBandFrequencyHz), passBandFrequencyHz + .1, nyquist),
     });
   }
   if (url === "/api/performance" && options.method === "POST") {
     const payload = JSON.parse(options.body || "{}");
     const runs = JSON.parse(localStorage.getItem(`rotorlab_runs_${user.id}`) || "[]");
     const run = {
-      id: crypto.randomUUID(), createdAt: new Date().toISOString(), label: payload.label,
-      targetRpm: latest.config.targetRpm, filteredRpm: latest.filteredRpm,
-      overshootPercent: latest.overshootPercent, settlingTimeSeconds: latest.settlingTimeSeconds,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      label: payload.label,
+      targetRpm: latest.config.targetRpm,
+      filteredRpm: latest.filteredRpm,
+      overshootPercent: latest.overshootPercent,
+      settlingTimeSeconds: latest.settlingTimeSeconds,
     };
     runs.push(run);
     localStorage.setItem(`rotorlab_runs_${user.id}`, JSON.stringify(runs));
@@ -370,12 +480,55 @@ async function hostedApi(url, options) {
   return latest || {};
 }
 
+function makeHostedSnapshot(state, rawRpm, filteredRpm) {
+  const speedError = state.config.targetRpm - filteredRpm;
+  const errorPercent = state.config.targetRpm ? Math.abs(speedError) / state.config.targetRpm * 100 : 0;
+  return {
+    timestamp: Date.now(),
+    running: state.running,
+    paused: Boolean(state.paused),
+    motor: state.motor,
+    config: { ...state.config },
+    filterSpec: {
+      samplingFrequencyHz: round(state.config.samplingFrequencyHz),
+      passBandFrequencyHz: round(state.config.passBandFrequencyHz),
+      stopBandFrequencyHz: round(state.config.stopBandFrequencyHz),
+      nyquistFrequencyHz: round(state.config.samplingFrequencyHz / 2),
+    },
+    rawRpm: round(rawRpm),
+    filteredRpm: round(filteredRpm),
+    actualRpm: round(state.actualRpm),
+    synchronousSpeed: 1500,
+    effectiveSynchronousSpeed: Math.max(1500, state.config.targetRpm),
+    maxSpeedRpm: 3000,
+    slipPercent: round((Math.max(1500, state.config.targetRpm) - state.actualRpm) / Math.max(15, Math.max(1500, state.config.targetRpm) / 100)),
+    speedError: round(speedError),
+    overshootPercent: round(Math.max(0, (state.maxRpm - state.config.targetRpm) / state.config.targetRpm * 100)),
+    settlingTimeSeconds: state.settlingTimeSeconds === null ? null : round(state.settlingTimeSeconds),
+    meanSquaredError: round(state.squaredErrorSum / Math.max(1, state.sampleCount)),
+    stability: state.paused
+      ? "paused"
+      : !state.running
+        ? "stopped"
+        : errorPercent <= 2 && state.stableSamples >= 5
+          ? "stable"
+          : errorPercent <= 8
+            ? "settling"
+            : "correcting",
+    elapsedSeconds: round(state.elapsedSeconds),
+  };
+}
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
 function round(value) {
   return Math.round(value * 100) / 100;
+}
+
+function roundToStep(value, step) {
+  return Math.round(value / step) * step;
 }
 
 function toast(message) {

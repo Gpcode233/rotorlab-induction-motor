@@ -10,6 +10,9 @@ Socket.IO transmits telemetry every 200 milliseconds, and JSON files store
 motor parameters, user accounts, and performance records. The application
 allows a user to vary the target speed, load torque, PID gains, and filter state
 while observing speed, slip, overshoot, settling time, and tracking error.
+The updated dashboard also displays a noise-filter tap input, sampling
+frequency, pass band frequency, stop band frequency, power rating, rated
+voltage, a 3000 RPM speed maximum, and pause/resume control.
 
 ## 1. Introduction
 
@@ -31,6 +34,11 @@ be observed in real time.
 - Regulate speed using a PID controller.
 - remove sensor noise using an FIR filter.
 - Evaluate stability using standard performance measurements.
+- Display FIR sampling, pass band, and stop band frequencies.
+- Let the user adjust the FIR noise filter tap count as an input.
+- Limit the target speed and chart scale to a maximum of 3000 RPM.
+- Allow load changes from 0 Nm to 300 Nm in multiples of 50 Nm.
+- Display power rating and rated voltage clearly on the dashboard.
 - Provide authentication and local storage through an Express API.
 - Explain practical applications of controlled induction motors.
 
@@ -92,6 +100,27 @@ linear phase. The dashboard plots both signals, making the noise reduction
 visible. Increasing the number of taps produces greater smoothing but also
 increases delay.
 
+The FIR design values shown in the application are:
+
+```text
+Sampling frequency = 5 Hz
+Pass band frequency = 0.8 Hz
+Stop band frequency = 2 Hz
+Nyquist frequency = 2.5 Hz
+Noise filter taps = 7
+```
+
+The sampling frequency comes from the simulation update period. Since the
+system updates every 0.2 seconds:
+
+```text
+fs = 1 / Ts = 1 / 0.2 = 5 Hz
+```
+
+The pass band represents the low-frequency speed changes that should remain
+visible. The stop band represents higher-frequency noise that should be
+attenuated by the FIR filter.
+
 ## 6. Software Architecture
 
 The browser sends control commands to an Express REST API. The server executes
@@ -121,10 +150,12 @@ mechanical stress, and allows smooth starting and stopping.
 
 ## 9. Testing and Results
 
-Automated tests verify the synchronous-speed formula, motor acceleration, and
-FIR output. Manual testing covers registration, login, starting and stopping,
-setpoint changes, load changes, disturbances, filter switching, responsive
-layout, and saving experiments.
+Automated tests verify the synchronous-speed formula, motor acceleration, FIR
+output, load limits, filter frequency values, and pause/resume behavior. Manual
+testing covers registration, login, starting, stopping, pausing, resuming,
+setpoint changes up to 3000 RPM, load changes in 50 Nm steps up to 300 Nm,
+disturbances, filter switching, noise filter tap changes, responsive layout,
+and saving experiments.
 
 With the default gains, the rotor accelerates toward the 1400 RPM target. The
 raw speed trace contains visible noise while the FIR output is smoother. A load

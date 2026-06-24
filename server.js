@@ -66,6 +66,14 @@ app.post("/api/simulation/stop", requireAuth, (_req, res) => {
   simulation.stop();
   res.json(simulation.snapshot());
 });
+app.post("/api/simulation/pause", requireAuth, (_req, res) => {
+  simulation.pause();
+  res.json(simulation.snapshot());
+});
+app.post("/api/simulation/resume", requireAuth, (_req, res) => {
+  simulation.resume();
+  res.json(simulation.snapshot());
+});
 app.post("/api/simulation/reset", requireAuth, (_req, res) => {
   simulation.reset();
   res.json(simulation.snapshot());
