@@ -179,6 +179,41 @@ document.querySelectorAll(".preset-btn").forEach((btn) => {
   });
 });
 
+function validateFilterParams() {
+  const samplingFreq = Number($("samplingFrequencyInput").value);
+  const passBand = Number($("passBandInput").value);
+  const stopBand = Number($("stopBandInput").value);
+  const nyquist = samplingFreq / 2;
+  let isValid = true;
+  let errors = [];
+
+  if (passBand >= stopBand) {
+    isValid = false;
+    errors.push("Pass band must be less than stop band");
+  }
+  if (passBand >= nyquist) {
+    isValid = false;
+    errors.push(`Pass band must be below Nyquist (${nyquist.toFixed(2)} Hz)`);
+  }
+  if (stopBand > nyquist) {
+    isValid = false;
+    errors.push(`Stop band must not exceed Nyquist (${nyquist.toFixed(2)} Hz)`);
+  }
+
+  const filterRow = $("samplingFrequencyInput").closest(".filter-grid") || $("samplingFrequencyInput").parentElement.parentElement;
+  const errorEl = filterRow.querySelector(".validation-error") ||
+    (() => { const el = document.createElement("p"); el.className = "validation-error"; el.style.color = "var(--red)"; el.style.fontSize = "0.7rem"; el.style.margin = "8px 0 0"; filterRow.appendChild(el); return el; })();
+
+  if (!isValid) {
+    errorEl.textContent = errors.join(" • ");
+    errorEl.style.display = "block";
+  } else {
+    errorEl.style.display = "none";
+  }
+
+  return isValid;
+}
+
 [
   "targetInput",
   "loadInput",
@@ -193,6 +228,9 @@ document.querySelectorAll(".preset-btn").forEach((btn) => {
   $(id).addEventListener("input", () => {
     $("targetOutput").textContent = `${Number($("targetInput").value).toLocaleString()} RPM`;
     $("loadOutput").textContent = `${Number($("loadInput").value).toFixed(0)} Nm`;
+    if (["samplingFrequencyInput", "passBandInput", "stopBandInput"].includes(id)) {
+      validateFilterParams();
+    }
     if (["kpInput", "kiInput", "kdInput", "filterTapsInput", "samplingFrequencyInput", "passBandInput", "stopBandInput"].includes(id)) {
       saveSettings();
     }
@@ -238,6 +276,7 @@ function showApp() {
   $("samplingFrequencyInput").value = settings.samplingFrequencyHz;
   $("passBandInput").value = settings.passBandFrequencyHz;
   $("stopBandInput").value = settings.stopBandFrequencyHz;
+  validateFilterParams();
   if (!hostedDemo) loadMotors();
 }
 
