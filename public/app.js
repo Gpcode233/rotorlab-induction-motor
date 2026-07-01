@@ -2,6 +2,8 @@ const hostedDemo = !["localhost", "127.0.0.1"].includes(location.hostname);
 const socket = !hostedDemo && typeof io === "function" ? io() : null;
 const chart = document.getElementById("speedChart");
 const ctx = chart.getContext("2d");
+const gaugeArc = document.getElementById("gaugeArc");
+const gaugeTargetTick = document.getElementById("gaugeTargetTick");
 const history = [];
 let latest = null;
 let token = localStorage.getItem("rotorlab_token");
@@ -117,6 +119,17 @@ $("filterToggle").addEventListener("click", () => {
   queueControlUpdate();
 });
 
+document.querySelectorAll(".preset-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    $("kpInput").value = btn.dataset.kp;
+    $("kiInput").value = btn.dataset.ki;
+    $("kdInput").value = btn.dataset.kd;
+    document.querySelectorAll(".preset-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    queueControlUpdate();
+  });
+});
+
 [
   "targetInput",
   "loadInput",
@@ -177,7 +190,8 @@ function render(data) {
   $("stability").textContent = data.stability.toUpperCase();
   $("speedDelta").textContent = `Target ${config.targetRpm.toLocaleString()} RPM | Error ${Math.round(data.speedError)} RPM`;
   $("runState").textContent = data.paused ? "paused" : data.running ? "online" : "offline";
-  $("startStopBtn").textContent = data.running ? "Stop motor" : "Start motor";
+  $("startBtnIcon").textContent = data.running ? "◼" : "▶";
+  $("startBtnText").textContent = data.running ? " Stop motor" : " Start motor";
   $("pauseBtn").textContent = data.paused ? "Resume" : "Pause";
   $("pauseBtn").disabled = !data.running;
   $("stabilityDot").style.background = data.stability === "stable" ? "var(--green)" : data.running ? "var(--amber)" : "var(--muted)";
@@ -196,6 +210,8 @@ function render(data) {
   $("analysisOvershoot").textContent = `${data.overshootPercent.toFixed(2)}%`;
   $("analysisSettling").textContent = data.settlingTimeSeconds === null ? "-" : `${data.settlingTimeSeconds.toFixed(1)} s`;
   $("analysisMse").textContent = Math.round(data.meanSquaredError).toLocaleString();
+
+  updateGauge(data.filteredRpm, data.config.targetRpm);
 
   const motor = data.motor;
   $("motorName").textContent = motor.name;
@@ -233,7 +249,7 @@ function drawChart() {
     ctx.fillText(`${Math.round(maxRpm - row * maxRpm / 4)}`, 4, Math.max(10, y - 5));
   }
 
-  plot("rawRpm", "#547269", 1, .5);
+  plot("rawRpm", "#02bd88", 1, .55);
   plot("filteredRpm", "#f0a72e", 2, 1);
   plot("target", "#656d6b", 1, .9, [5, 5]);
 
@@ -255,6 +271,18 @@ function drawChart() {
     ctx.globalAlpha = 1;
     ctx.setLineDash([]);
   }
+}
+
+function updateGauge(rpm, targetRpm) {
+  const maxRpm = 3000;
+  const arcTotal = 424.12;
+  const circumference = 565.49;
+  const fill = (Math.min(Math.max(rpm, 0), maxRpm) / maxRpm) * arcTotal;
+  const color = rpm > targetRpm * 1.08 ? "#ef6c61" : rpm >= targetRpm * 0.92 ? "#77d296" : "#f0a72e";
+  gaugeArc.style.strokeDasharray = `${fill} ${circumference}`;
+  gaugeArc.style.stroke = color;
+  const targetAngle = 135 + (Math.min(Math.max(targetRpm, 0), maxRpm) / maxRpm) * 270;
+  gaugeTargetTick.setAttribute("transform", `rotate(${targetAngle - 270} 110 115)`);
 }
 
 function queueControlUpdate() {
@@ -380,7 +408,8 @@ function startHostedSimulation() {
       state.previousError = error;
       const drive = clamp(pid / 900, -.3, 1);
       const loadLoss = ((state.config.loadTorqueNm + state.disturbance) / motor.ratedTorqueNm) * 48;
-      state.actualRpm = clamp(state.actualRpm + (drive * 3000 - state.actualRpm - loadLoss) / 1.03 * dt, 0, 3090);
+      const timeConstant = 0.85 + motor.inertiaKgM2 * 10;
+      state.actualRpm = clamp(state.actualRpm + (drive * 3000 - state.actualRpm - loadLoss) / timeConstant * dt, 0, 3090);
       state.disturbance *= .88;
     } else {
       state.actualRpm = Math.max(0, state.actualRpm - state.actualRpm * dt * 1.8);
@@ -501,7 +530,7 @@ function makeHostedSnapshot(state, rawRpm, filteredRpm) {
     synchronousSpeed: 1500,
     effectiveSynchronousSpeed: Math.max(1500, state.config.targetRpm),
     maxSpeedRpm: 3000,
-    slipPercent: round((Math.max(1500, state.config.targetRpm) - state.actualRpm) / Math.max(15, Math.max(1500, state.config.targetRpm) / 100)),
+    slipPercent: round(Math.max(1500, state.config.targetRpm) > 0 ? ((Math.max(1500, state.config.targetRpm) - state.actualRpm) / Math.max(1500, state.config.targetRpm)) * 100 : 0),
     speedError: round(speedError),
     overshootPercent: round(Math.max(0, (state.maxRpm - state.config.targetRpm) / state.config.targetRpm * 100)),
     settlingTimeSeconds: state.settlingTimeSeconds === null ? null : round(state.settlingTimeSeconds),

@@ -57,7 +57,7 @@
       <div class="operator">
         <span class="connection-dot"></span>
         <span id="operatorName">Operator</span>
-        <button class="icon-btn" id="logoutBtn" title="Sign out">↗</button>
+        <button class="icon-btn" id="logoutBtn" title="Sign out"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3M10 11l3-3-3-3M13 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
     </header>
 
@@ -70,37 +70,61 @@
           </div>
           <div class="run-actions">
             <button class="secondary-btn" id="resetBtn">Reset</button>
-            <button class="primary-btn" id="startStopBtn"><span class="play-icon">▶</span> Start motor</button>
+            <button class="primary-btn" id="startStopBtn"><span id="startBtnIcon" class="play-icon">▶</span><span id="startBtnText"> Start motor</span></button>
             <button class="secondary-btn" id="pauseBtn">Pause</button>
           </div>
         </div>
 
         <div class="telemetry">
-          <div class="speed-readout">
+          <div class="gauge-region">
             <p class="metric-label">FILTERED ROTOR SPEED</p>
-            <div><strong id="filteredRpm">0</strong><span>RPM</span></div>
+            <div class="gauge-wrap">
+              <svg class="tachometer" viewBox="0 0 220 220" aria-hidden="true">
+                <line x1="46.36" y1="178.64" x2="56.26" y2="168.74" class="g-tick"/>
+                <line x1="20" y1="115" x2="34" y2="115" class="g-tick"/>
+                <line x1="46.36" y1="51.36" x2="56.26" y2="61.26" class="g-tick"/>
+                <line x1="110" y1="25" x2="110" y2="39" class="g-tick g-tick-major"/>
+                <line x1="173.64" y1="51.36" x2="163.74" y2="61.26" class="g-tick"/>
+                <line x1="200" y1="115" x2="186" y2="115" class="g-tick"/>
+                <line x1="173.64" y1="178.64" x2="163.74" y2="168.74" class="g-tick"/>
+                <text x="38" y="200" class="g-label">0</text>
+                <text x="84" y="16" class="g-label">1500</text>
+                <text x="163" y="200" class="g-label">3k</text>
+                <circle class="g-track" cx="110" cy="115" r="90" fill="none" stroke="#1d2223" stroke-width="14"
+                  stroke-dasharray="424.12 565.49" transform="rotate(135 110 115)" stroke-linecap="round"/>
+                <line id="gaugeTargetTick" x1="110" y1="18" x2="110" y2="42"
+                  stroke="#4a5652" stroke-width="2.5" transform="rotate(0 110 115)"/>
+                <circle class="g-fill" id="gaugeArc" cx="110" cy="115" r="90" fill="none"
+                  stroke="#f0a72e" stroke-width="14" stroke-dasharray="0 565.49"
+                  transform="rotate(135 110 115)" stroke-linecap="round"/>
+                <text id="filteredRpm" x="110" y="112" class="g-value" text-anchor="middle" dominant-baseline="middle">0</text>
+                <text x="110" y="142" class="g-unit" text-anchor="middle">RPM</text>
+              </svg>
+            </div>
             <p class="speed-delta" id="speedDelta">Target 1,400 RPM</p>
+            <div class="gauge-sub">
+              <span class="metric-label">RAW SENSOR</span>
+              <strong id="rawRpm">0</strong><span class="g-sub-unit"> RPM</span>
+            </div>
           </div>
-          <div class="metric">
-            <p class="metric-label">RAW SENSOR</p>
-            <strong id="rawRpm">0</strong><span>RPM</span>
-          </div>
-          <div class="metric">
-            <p class="metric-label">SLIP</p>
-            <strong id="slip">100.0</strong><span>%</span>
-          </div>
-          <div class="metric">
-            <p class="metric-label">POWER RATING</p>
-            <strong id="powerRating">2.2</strong><span>kW</span>
-          </div>
-          <div class="metric">
-            <p class="metric-label">VOLTAGE</p>
-            <strong id="ratedVoltage">415</strong><span>V</span>
-          </div>
-          <div class="metric">
-            <p class="metric-label">STABILITY</p>
-            <strong class="status-text" id="stability">STOPPED</strong>
-            <span class="status-line"><i id="stabilityDot"></i><b id="statusDetail">System idle</b></span>
+          <div class="metrics-panel">
+            <div class="metric-card">
+              <p class="metric-label">SLIP</p>
+              <strong id="slip">100.0</strong><span>%</span>
+            </div>
+            <div class="metric-card">
+              <p class="metric-label">POWER RATING</p>
+              <strong id="powerRating">2.2</strong><span>kW</span>
+            </div>
+            <div class="metric-card">
+              <p class="metric-label">VOLTAGE</p>
+              <strong id="ratedVoltage">415</strong><span>V</span>
+            </div>
+            <div class="metric-card stability-card">
+              <p class="metric-label">STABILITY</p>
+              <strong class="status-text" id="stability">STOPPED</strong>
+              <span class="status-line"><i id="stabilityDot"></i><b id="statusDetail">System idle</b></span>
+            </div>
           </div>
         </div>
 
@@ -140,6 +164,14 @@
             <label>Load torque <output id="loadOutput">50 Nm</output>
               <input id="loadInput" type="range" min="0" max="300" value="50" step="50">
             </label>
+            <div class="pid-presets">
+              <span class="metric-label">PRESETS</span>
+              <div class="preset-btns">
+                <button class="preset-btn" data-kp="0.4" data-ki="0.05" data-kd="0.02">Gentle</button>
+                <button class="preset-btn" data-kp="0.72" data-ki="0.18" data-kd="0.06">Default</button>
+                <button class="preset-btn" data-kp="1.5" data-ki="0.4" data-kd="0.12">Aggressive</button>
+              </div>
+            </div>
             <div class="pid-grid">
               <label>Kp<input id="kpInput" type="number" min="0" max="3" step="0.01" value="0.72"></label>
               <label>Ki<input id="kiInput" type="number" min="0" max="1" step="0.01" value="0.18"></label>

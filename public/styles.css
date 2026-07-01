@@ -96,14 +96,28 @@ main { margin: 0 auto; max-width: 1600px; padding: 52px clamp(20px, 4vw, 64px) 8
 .run-actions { display: flex; gap: 9px; }
 .play-icon { font-size: .6rem; margin-right: 7px; }
 
-.telemetry { border-bottom: 1px solid var(--line); border-top: 1px solid var(--line); display: grid; grid-template-columns: 2fr repeat(5, 1fr); margin-bottom: 54px; }
-.speed-readout, .metric { min-height: 150px; padding: 28px 28px 25px 0; }
-.metric { border-left: 1px solid var(--line); padding-left: 28px; }
-.speed-readout strong { font-family: var(--mono); font-size: clamp(3.4rem, 6vw, 6.3rem); font-weight: 500; letter-spacing: -.08em; line-height: .9; }
-.speed-readout div span, .metric > span:not(.status-line) { color: var(--muted); font-family: var(--mono); font-size: .65rem; margin-left: 9px; }
-.speed-delta { color: var(--amber); font-family: var(--mono); font-size: .72rem; margin: 13px 0 0; }
-.metric strong { display: inline-block; font-family: var(--mono); font-size: clamp(1.8rem, 3vw, 3rem); font-weight: 500; margin-top: 14px; }
-.metric .status-text { font-family: var(--sans); font-size: 1.5rem; letter-spacing: -.04em; }
+.telemetry { border-bottom: 1px solid var(--line); border-top: 1px solid var(--line); display: grid; grid-template-columns: 280px 1fr; margin-bottom: 54px; }
+.gauge-region { border-right: 1px solid var(--line); padding: 28px 28px 20px; }
+.gauge-wrap { margin: 14px 0 0; }
+.tachometer { display: block; width: 100%; max-width: 220px; margin: 0 auto; overflow: visible; }
+.g-tick { stroke: #272c2d; stroke-width: 2; }
+.g-tick-major { stroke: #3d4443; stroke-width: 3; }
+.g-label { fill: #4a5250; font-family: "IBM Plex Mono", monospace; font-size: 10px; }
+.g-value { fill: var(--text); font-family: "IBM Plex Mono", monospace; font-size: 44px; font-weight: 500; letter-spacing: -.05em; }
+.g-unit { fill: var(--muted); font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: .12em; }
+.g-fill { transition: stroke-dasharray .2s linear, stroke .3s ease; }
+.gauge-sub { align-items: baseline; display: flex; gap: 6px; margin-top: 12px; }
+.gauge-sub strong { font-family: var(--mono); font-size: 1.1rem; font-weight: 500; }
+.g-sub-unit { color: var(--muted); font-family: var(--mono); font-size: .65rem; }
+.speed-delta { color: var(--amber); font-family: var(--mono); font-size: .72rem; margin: 10px 0 0; }
+.metrics-panel { display: grid; grid-template-columns: repeat(3, 1fr); }
+.metric-card { border-left: 1px solid var(--line); padding: 28px; }
+.metric-card:nth-child(1) { border-left: 0; }
+.metric-card strong { display: inline-block; font-family: var(--mono); font-size: clamp(1.8rem, 2.5vw, 2.8rem); font-weight: 500; margin-top: 14px; }
+.metric-card > span:not(.status-line) { color: var(--muted); font-family: var(--mono); font-size: .65rem; margin-left: 4px; }
+.stability-card { border-left: 0; border-top: 1px solid var(--line); grid-column: 1 / -1; }
+.stability-card .status-text { font-family: var(--sans); font-size: 1.5rem; letter-spacing: -.04em; }
+button:disabled { cursor: not-allowed; opacity: .3; }
 .status-line { align-items: center; display: flex; font-family: var(--mono); font-size: .65rem; gap: 7px; margin-top: 18px; }
 .status-line i { background: var(--muted); border-radius: 50%; height: 6px; width: 6px; }
 .status-line b { color: var(--muted); font-weight: 400; }
@@ -138,6 +152,11 @@ input[type="range"] { accent-color: var(--amber); display: block; margin-top: 14
 .toggle i { background: #909694; border-radius: 50%; display: block; height: 18px; transition: transform .2s; width: 18px; }
 .toggle.active { background: var(--amber-soft); }
 .toggle.active i { background: var(--amber); transform: translateX(19px); }
+.pid-presets { margin: 26px 0 10px; }
+.preset-btns { display: flex; gap: 6px; margin-top: 8px; }
+.preset-btn { background: var(--surface-2); border: 1px solid var(--line); color: var(--muted); font-family: var(--mono); font-size: .62rem; letter-spacing: .04em; padding: 6px 12px; transition: border-color .15s, color .15s; }
+.preset-btn:hover { border-color: var(--muted); color: var(--text); }
+.preset-btn.active { border-color: var(--amber); color: var(--amber); }
 .warning-btn { color: #e9b361; }
 .parameters, .history { border-top: 1px solid var(--line); margin-top: 70px; padding-top: 30px; }
 .machine-tag { background: var(--surface-2); color: var(--muted); font-family: var(--mono); font-size: .62rem; padding: 7px 9px; }
@@ -178,9 +197,14 @@ footer { border-top: 1px solid var(--line); color: var(--muted); display: flex; 
   nav { bottom: 0; height: 56px; justify-content: space-around; left: 0; position: fixed; right: 0; z-index: 6; background: var(--surface); }
   .operator { display: none; }
   main { padding-top: 35px; }
-  .telemetry { grid-template-columns: 1fr 1fr; }
-  .speed-readout { grid-column: span 2; }
-  .metric:nth-child(2) { border-left: 0; }
+  .telemetry { grid-template-columns: 1fr; }
+  .gauge-region { border-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+  .tachometer { max-width: 200px; }
+  .metrics-panel { grid-template-columns: 1fr 1fr; }
+  .metric-card:nth-child(2) { border-left: 1px solid var(--line); }
+  .metric-card:nth-child(3) { border-top: 1px solid var(--line); border-left: 0; }
+  .metric-card:nth-child(4) { border-top: 1px solid var(--line); }
+  .stability-card { grid-column: 1 / -1; }
   .control-grid { grid-template-columns: 1fr; }
   .controls-region { border-left: 0; border-top: 1px solid var(--line); padding: 30px 0 0; }
   .parameter-list { grid-template-columns: repeat(3, 1fr); row-gap: 24px; }
@@ -193,11 +217,9 @@ footer { border-top: 1px solid var(--line); color: var(--muted); display: flex; 
   .auth-panel { padding: 28px; }
   .auth-form-wrap h2 { margin-top: 55px; }
   .workspace-heading { align-items: flex-start; flex-direction: column; gap: 25px; }
-  .telemetry { grid-template-columns: 1fr 1fr; }
-  .speed-readout { min-height: 130px; }
-  .metric { min-height: 120px; padding: 20px 12px; }
-  .metric:nth-child(2n) { border-left: 0; }
-  .speed-readout strong { font-size: 3.8rem; }
+  .metrics-panel { grid-template-columns: 1fr 1fr; }
+  .metric-card { padding: 20px 14px; }
+  .metric-card strong { font-size: 1.8rem; }
   .legend { display: none; }
   .chart-wrap { height: 280px; }
   .parameter-list { grid-template-columns: 1fr 1fr; }
