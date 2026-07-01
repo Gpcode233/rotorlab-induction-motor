@@ -14,6 +14,34 @@ let controlTimer;
 
 const $ = (id) => document.getElementById(id);
 
+const DEFAULT_SETTINGS = {
+  kp: 0.72,
+  ki: 0.18,
+  kd: 0.06,
+  filterTaps: 7,
+  samplingFrequencyHz: 5,
+  passBandFrequencyHz: 0.8,
+  stopBandFrequencyHz: 2,
+};
+
+function loadSettings() {
+  const saved = JSON.parse(localStorage.getItem("rotorlab_settings") || "{}");
+  return { ...DEFAULT_SETTINGS, ...saved };
+}
+
+function saveSettings() {
+  const settings = {
+    kp: Number($("kpInput").value),
+    ki: Number($("kiInput").value),
+    kd: Number($("kdInput").value),
+    filterTaps: Number($("filterTapsInput").value),
+    samplingFrequencyHz: Number($("samplingFrequencyInput").value),
+    passBandFrequencyHz: Number($("passBandInput").value),
+    stopBandFrequencyHz: Number($("stopBandInput").value),
+  };
+  localStorage.setItem("rotorlab_settings", JSON.stringify(settings));
+}
+
 if (token && user) showApp();
 
 $("authToggle").addEventListener("click", () => {
@@ -144,6 +172,9 @@ document.querySelectorAll(".preset-btn").forEach((btn) => {
   $(id).addEventListener("input", () => {
     $("targetOutput").textContent = `${Number($("targetInput").value).toLocaleString()} RPM`;
     $("loadOutput").textContent = `${Number($("loadInput").value).toFixed(0)} Nm`;
+    if (["kpInput", "kiInput", "kdInput", "filterTapsInput", "samplingFrequencyInput", "passBandInput", "stopBandInput"].includes(id)) {
+      saveSettings();
+    }
     queueControlUpdate();
   });
 });
@@ -178,6 +209,14 @@ function showApp() {
   $("authShell").classList.add("hidden");
   $("appShell").classList.remove("hidden");
   $("operatorName").textContent = user.name;
+  const settings = loadSettings();
+  $("kpInput").value = settings.kp;
+  $("kiInput").value = settings.ki;
+  $("kdInput").value = settings.kd;
+  $("filterTapsInput").value = settings.filterTaps;
+  $("samplingFrequencyInput").value = settings.samplingFrequencyHz;
+  $("passBandInput").value = settings.passBandFrequencyHz;
+  $("stopBandInput").value = settings.stopBandFrequencyHz;
 }
 
 function render(data) {

@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "id": "43d33bc4-cd4c-430f-897e-fce1d7032c10",
+    "name": "Joshua Nnadi",
+    "email": "chimdijos8@gmail.com",
+    "salt": "89a7fcec0bc669ed747467308273e423",
+    "passwordHash": "ff20b95ec1b77b0f7772b4f1325fc186cea35a4dbfb697e4c0bc1bd1a29814a606cd37416a669d80727445650d25a9d1e8afa575d99178a66b8360ce505bddec"
+  }
+]
