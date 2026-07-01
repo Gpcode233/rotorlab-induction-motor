@@ -246,11 +246,17 @@
           <div class="section-heading">
             <div><p class="eyebrow">LOCAL STORAGE</p><h2>Saved experiments</h2></div>
             <div style="display: flex; gap: 9px;">
+              <button class="secondary-btn" id="compareBtn" style="display: none;">Compare selected</button>
               <button class="secondary-btn" id="exportCsvBtn" style="display: none;">Export as CSV</button>
               <button class="secondary-btn" id="exportJsonBtn" style="display: none;">Export as JSON</button>
             </div>
           </div>
           <div id="historyList" class="history-list"><p class="empty-state">No saved runs yet.</p></div>
+          <div id="comparisonView" class="comparison-chart hidden" style="margin-top: 40px;">
+            <h3 style="color: var(--text); margin: 0 0 16px;">Run comparison</h3>
+            <canvas id="comparisonChart" style="width: 100%; height: 300px; border: 1px solid var(--line); display: block;"></canvas>
+            <button class="secondary-btn" id="closeComparisonBtn" style="margin-top: 16px;">Close comparison</button>
+          </div>
         </section>
       </section>
 

@@ -461,15 +461,28 @@ function exportData(runs, format) {
 }
 
 function renderHistory(runs) {
-  $("historyList").innerHTML = runs.length ? runs.map((run) => `
-      <div class="history-row">
-        <strong>${escapeHtml(run.label)}</strong>
-        <span>${run.targetRpm} RPM</span>
-        <span>${Math.round(run.filteredRpm)} RPM</span>
-        <span>${run.overshootPercent.toFixed(1)}% over</span>
-        <span>${run.settlingTimeSeconds === null ? "Not settled" : `${run.settlingTimeSeconds}s settle`}</span>
-        <span>${new Date(run.createdAt).toLocaleDateString()}</span>
+  const comparisonRuns = JSON.parse(sessionStorage.getItem("rotorlab_comparison_runs") || "[]");
+  $("historyList").innerHTML = runs.length ? runs.map((run, idx) => `
+      <div class="history-row" style="display: flex; align-items: center; gap: 12px;">
+        <input type="checkbox" class="run-checkbox" data-index="${idx}" data-id="${run.id}" ${comparisonRuns.includes(run.id) ? "checked" : ""} style="cursor: pointer; width: 18px; height: 18px;">
+        <span style="flex: 1;">
+          <strong>${escapeHtml(run.label)}</strong><br>
+          <span style="font-size: 0.65rem; color: var(--muted);">Target ${run.targetRpm} RPM • Filtered ${Math.round(run.filteredRpm)} RPM</span>
+        </span>
+        <span style="text-align: right; white-space: nowrap;">
+          <span style="display: block; font-size: 0.7rem;">${run.overshootPercent.toFixed(1)}% over</span>
+          <span style="display: block; font-size: 0.65rem; color: var(--muted);">${run.settlingTimeSeconds === null ? "Not settled" : `${run.settlingTimeSeconds.toFixed(1)}s`}</span>
+          <span style="display: block; font-size: 0.6rem; color: var(--muted);">${new Date(run.createdAt).toLocaleDateString()}</span>
+        </span>
       </div>`).join("") : '<p class="empty-state">No saved runs yet.</p>';
+
+  document.querySelectorAll(".run-checkbox").forEach((cb) => {
+    cb.addEventListener("change", () => {
+      const selected = Array.from(document.querySelectorAll(".run-checkbox:checked")).map((c) => c.dataset.id);
+      sessionStorage.setItem("rotorlab_comparison_runs", JSON.stringify(selected));
+      $("compareBtn").style.display = selected.length > 1 ? "inline-block" : "none";
+    });
+  });
 }
 
 async function api(url, options = {}) {
@@ -715,4 +728,68 @@ function escapeHtml(value) {
   const div = document.createElement("div");
   div.textContent = value;
   return div.innerHTML;
+}
+
+$("compareBtn")?.addEventListener("click", async () => {
+  const selectedIds = Array.from(document.querySelectorAll(".run-checkbox:checked")).map((c) => c.dataset.id);
+  if (selectedIds.length < 2) {
+    toast("Select at least 2 runs to compare");
+    return;
+  }
+
+  let runs;
+  if (hostedDemo) {
+    const allRuns = JSON.parse(localStorage.getItem(`rotorlab_runs_${user.id}`) || "[]");
+    runs = allRuns.filter((r) => selectedIds.includes(r.id));
+  } else {
+    const allRuns = await api("/api/performance");
+    runs = allRuns.filter((r) => selectedIds.includes(r.id));
+  }
+
+  $("comparisonView").classList.remove("hidden");
+  drawComparisonChart(runs);
+});
+
+$("closeComparisonBtn")?.addEventListener("click", () => {
+  $("comparisonView").classList.add("hidden");
+});
+
+function drawComparisonChart(runs) {
+  const canvas = $("comparisonChart");
+  const ctx = canvas.getContext("2d");
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, rect.width, rect.height);
+
+  const width = rect.width;
+  const height = rect.height;
+  const colors = ["#f0a72e", "#02bd88", "#ef6c61", "#68706e", "#4a5652"];
+
+  ctx.strokeStyle = "#202526";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = (i / 4) * height;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+  }
+
+  runs.forEach((run, idx) => {
+    ctx.beginPath();
+    ctx.strokeStyle = colors[idx % colors.length];
+    ctx.lineWidth = 2;
+    const maxRpm = Math.max(...runs.map((r) => Math.max(r.targetRpm, r.filteredRpm)));
+    const x = (idx / runs.length) * width;
+    const y = height - (run.filteredRpm / maxRpm) * height;
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+    ctx.fillStyle = colors[idx % colors.length];
+    ctx.font = "11px IBM Plex Mono";
+    ctx.fillText(escapeHtml(run.label.slice(0, 20)), 4, y - 5);
+  });
 }
