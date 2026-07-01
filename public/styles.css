@@ -128,13 +128,25 @@ main { margin: 0 auto; max-width: 1600px; padding: 52px clamp(20px, 4vw, 64px) 8
 .telemetry { border-bottom: 1px solid var(--line); border-top: 1px solid var(--line); display: grid; grid-template-columns: 280px 1fr; margin-bottom: 54px; }
 .gauge-region { border-right: 1px solid var(--line); padding: 28px 28px 20px; }
 .gauge-wrap { margin: 14px 0 0; }
-.tachometer { display: block; width: 100%; max-width: 220px; margin: 0 auto; overflow: visible; }
+.tachometer {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  margin: 0 auto;
+  overflow: visible;
+  filter: drop-shadow(0 0 20px rgba(240, 167, 46, 0.2));
+  transition: filter .4s ease;
+}
+.tachometer:hover { filter: drop-shadow(0 0 30px rgba(240, 167, 46, 0.4)); }
 .g-tick { stroke: #272c2d; stroke-width: 2; }
 .g-tick-major { stroke: #3d4443; stroke-width: 3; }
 .g-label { fill: #4a5250; font-family: "IBM Plex Mono", monospace; font-size: 10px; }
 .g-value { fill: var(--text); font-family: "IBM Plex Mono", monospace; font-size: 44px; font-weight: 500; letter-spacing: -.05em; }
 .g-unit { fill: var(--muted); font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: .12em; }
-.g-fill { transition: stroke-dasharray .2s linear, stroke .3s ease; }
+.g-fill {
+  transition: stroke-dasharray .3s cubic-bezier(0.4, 0, 0.2, 1), stroke .4s ease;
+  filter: drop-shadow(0 0 8px rgba(240, 167, 46, 0.4));
+}
 .gauge-sub { align-items: baseline; display: flex; gap: 6px; margin-top: 12px; }
 .gauge-sub strong { font-family: var(--mono); font-size: 1.1rem; font-weight: 500; }
 .g-sub-unit { color: var(--muted); font-family: var(--mono); font-size: .65rem; }
