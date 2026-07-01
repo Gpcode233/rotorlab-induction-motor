@@ -1,24 +1,31 @@
 :root {
   --bg: #0a0c0d;
+  --bg-gradient: linear-gradient(135deg, #0a0c0d 0%, #0f1214 100%);
   --surface: #101314;
+  --surface-light: #131617;
   --surface-2: #15191a;
   --line: #292e2f;
   --line-soft: #1d2223;
   --text: #f3f1e9;
+  --text-secondary: #d4d2ca;
   --muted: #8d9593;
   --amber: #f0a72e;
   --amber-soft: #5a401c;
+  --amber-glow: rgba(240, 167, 46, 0.2);
   --green: #77d296;
+  --green-glow: rgba(119, 210, 150, 0.2);
   --red: #ef6c61;
+  --red-glow: rgba(239, 108, 97, 0.3);
   --mono: "IBM Plex Mono", monospace;
   --sans: "Manrope", sans-serif;
 }
 
 * { box-sizing: border-box; }
-html { background: var(--bg); color: var(--text); font-family: var(--sans); }
+html { background: var(--bg-gradient); color: var(--text); font-family: var(--sans); }
 body { margin: 0; min-width: 320px; }
 button, input { font: inherit; }
-button { cursor: pointer; }
+button { cursor: pointer; transition: all .25s cubic-bezier(0.4, 0, 0.2, 1); }
+input { transition: all .2s ease; }
 .hidden { display: none !important; }
 .muted { color: var(--muted); line-height: 1.7; }
 .eyebrow, .metric-label {
@@ -69,16 +76,33 @@ input[type="email"], input[type="password"], input[type="text"], input[type="num
 input:focus { border-color: var(--amber); }
 .form-error { color: var(--red); font-size: .78rem; min-height: 18px; }
 .primary-btn, .secondary-btn {
-  border: 1px solid var(--amber);
+  border: 1.5px solid var(--amber);
   font-size: .76rem;
   font-weight: 700;
   letter-spacing: .04em;
   padding: 12px 18px;
+  position: relative;
+  overflow: hidden;
 }
-.primary-btn { background: var(--amber); color: #15110a; }
-.primary-btn:hover { background: #ffc35a; }
-.secondary-btn { background: transparent; border-color: var(--line); color: var(--text); }
-.secondary-btn:hover { border-color: var(--muted); }
+.primary-btn { background: var(--amber); color: #15110a; box-shadow: 0 4px 15px var(--amber-glow); }
+.primary-btn:hover {
+  background: #ffc35a;
+  box-shadow: 0 6px 25px var(--amber-glow);
+  transform: translateY(-2px);
+}
+.primary-btn:active { transform: translateY(0); }
+.secondary-btn {
+  background: rgba(20, 20, 22, 0.6);
+  border-color: var(--line);
+  color: var(--text);
+  backdrop-filter: blur(10px);
+}
+.secondary-btn:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-secondary);
+  background: rgba(30, 30, 35, 0.8);
+  box-shadow: inset 0 0 15px rgba(240, 167, 46, 0.1);
+}
 .full { width: 100%; }
 .text-btn { background: none; border: 0; color: var(--amber); margin-top: 24px; padding: 0; }
 
