@@ -5,5 +5,12 @@
     "email": "chimdijos8@gmail.com",
     "salt": "89a7fcec0bc669ed747467308273e423",
     "passwordHash": "ff20b95ec1b77b0f7772b4f1325fc186cea35a4dbfb697e4c0bc1bd1a29814a606cd37416a669d80727445650d25a9d1e8afa575d99178a66b8360ce505bddec"
+  },
+  {
+    "id": "2b9435ba-537e-4c6a-9725-e90c3e966f6f",
+    "name": "Joshua Nnadi",
+    "email": "admin@value-traders.com",
+    "salt": "2f20f6c1f3f3ec488c95a98422aa4fa7",
+    "passwordHash": "d1a149ce956b0028c1ecfa168ca234ec0beeb26bb069e7ce5c0110936601e506e97e55adec157961d26c9f1ede7db3c7fea8f1f421afe3036995c0f05fa2caf5"
   }
 ]

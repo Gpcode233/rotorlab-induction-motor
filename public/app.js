@@ -42,6 +42,27 @@ function saveSettings() {
   localStorage.setItem("rotorlab_settings", JSON.stringify(settings));
 }
 
+async function loadMotors() {
+  try {
+    const response = await fetch("/api/motors");
+    const motors = await response.json();
+    const select = $("motorSelect");
+    select.innerHTML = motors.map((m) => `<option value="${m.id}">${m.name}</option>`).join("");
+    const savedMotorId = localStorage.getItem("rotorlab_motor_id");
+    if (savedMotorId && motors.some((m) => m.id === savedMotorId)) {
+      select.value = savedMotorId;
+    } else if (motors.length > 0) {
+      select.value = motors[0].id;
+    }
+    select.addEventListener("change", (e) => {
+      localStorage.setItem("rotorlab_motor_id", e.target.value);
+      location.reload();
+    });
+  } catch (error) {
+    console.error("Failed to load motors:", error);
+  }
+}
+
 if (token && user) showApp();
 
 $("authToggle").addEventListener("click", () => {
@@ -217,6 +238,7 @@ function showApp() {
   $("samplingFrequencyInput").value = settings.samplingFrequencyHz;
   $("passBandInput").value = settings.passBandFrequencyHz;
   $("stopBandInput").value = settings.stopBandFrequencyHz;
+  if (!hostedDemo) loadMotors();
 }
 
 function render(data) {

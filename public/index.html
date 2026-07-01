@@ -206,9 +206,12 @@
           <div class="section-heading">
             <div>
               <p class="eyebrow">SELECTED MACHINE</p>
-              <h2 id="motorName">Industrial 3-Phase Motor</h2>
+              <label style="display: flex; align-items: center; gap: 12px; margin: 0;">
+                <h2 id="motorName" style="margin: 0;">Industrial 3-Phase Motor</h2>
+                <select id="motorSelect" style="padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); color: var(--text); font-family: var(--mono); font-size: 0.7rem; border-radius: 0; cursor: pointer;"><option value="">Loading motors...</option></select>
+              </label>
             </div>
-            <span class="machine-tag">IM-4P-2.2KW</span>
+            <span class="machine-tag" id="machineTag">IM-4P-2.2KW</span>
           </div>
           <div class="parameter-list" id="parameterList"></div>
         </section>
