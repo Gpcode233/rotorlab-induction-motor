@@ -243,7 +243,13 @@
           </article>
         </div>
         <section class="history">
-          <div class="section-heading"><div><p class="eyebrow">LOCAL STORAGE</p><h2>Saved experiments</h2></div></div>
+          <div class="section-heading">
+            <div><p class="eyebrow">LOCAL STORAGE</p><h2>Saved experiments</h2></div>
+            <div style="display: flex; gap: 9px;">
+              <button class="secondary-btn" id="exportCsvBtn" style="display: none;">Export as CSV</button>
+              <button class="secondary-btn" id="exportJsonBtn" style="display: none;">Export as JSON</button>
+            </div>
+          </div>
           <div id="historyList" class="history-list"><p class="empty-state">No saved runs yet.</p></div>
         </section>
       </section>

@@ -370,16 +370,55 @@ function queueControlUpdate() {
 
 async function loadHistory() {
   try {
+    let runs;
     if (hostedDemo) {
-      const runs = JSON.parse(localStorage.getItem(`rotorlab_runs_${user.id}`) || "[]").reverse();
-      renderHistory(runs);
-      return;
+      runs = JSON.parse(localStorage.getItem(`rotorlab_runs_${user.id}`) || "[]").reverse();
+    } else {
+      runs = await api("/api/performance");
     }
-    const runs = await api("/api/performance");
     renderHistory(runs);
+    if (runs.length > 0) {
+      $("exportCsvBtn").style.display = "block";
+      $("exportJsonBtn").style.display = "block";
+      $("exportCsvBtn").onclick = () => exportData(runs, "csv");
+      $("exportJsonBtn").onclick = () => exportData(runs, "json");
+    } else {
+      $("exportCsvBtn").style.display = "none";
+      $("exportJsonBtn").style.display = "none";
+    }
   } catch (error) {
     toast(error.message);
   }
+}
+
+function exportData(runs, format) {
+  let data, filename, type;
+  if (format === "csv") {
+    const headers = ["Label", "Target RPM", "Filtered RPM", "Overshoot %", "Settling Time (s)", "Created At"];
+    const rows = runs.map((r) => [
+      escapeHtml(r.label),
+      r.targetRpm,
+      Math.round(r.filteredRpm),
+      r.overshootPercent.toFixed(1),
+      r.settlingTimeSeconds === null ? "Not settled" : r.settlingTimeSeconds.toFixed(1),
+      new Date(r.createdAt).toLocaleString(),
+    ]);
+    data = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
+    filename = "rotorlab-runs.csv";
+    type = "text/csv";
+  } else {
+    data = JSON.stringify(runs, null, 2);
+    filename = "rotorlab-runs.json";
+    type = "application/json";
+  }
+  const blob = new Blob([data], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`Exported ${runs.length} run(s) as ${format.toUpperCase()}`);
 }
 
 function renderHistory(runs) {
