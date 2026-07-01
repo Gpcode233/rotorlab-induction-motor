@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(dir)",
+      "Bash(node server.js)",
+      "Bash(Start-Sleep -Milliseconds 2000)",
+      "Bash(curl http://localhost:3000 -s)",
+      "Bash(Select-String \"<title>\")",
+      "Bash(chromium-cli http://localhost:3000 screenshot.png)",
+      "PowerShell(Add-Type -AssemblyName System.Windows.Forms; $browser = New-Object System.Windows.Forms.WebBrowser; $browser.Navigate\\('http://localhost:3000'\\); Start-Sleep -Seconds 3; $bitmap = New-Object System.Drawing.Bitmap\\($browser.Width, $browser.Height\\); $browser.DrawToBitmap\\($bitmap, \\(New-Object System.Drawing.Rectangle\\(0, 0, $browser.Width, $browser.Height\\)\\)\\); $bitmap.Save\\(\"$PWD\\\\screenshot.png\"\\); Write-Host \"Screenshot saved\")",
+      "Bash(pkill -f \"node server.js\")"
+    ]
+  }
+}
