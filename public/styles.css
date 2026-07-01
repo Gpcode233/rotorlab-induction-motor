@@ -523,11 +523,70 @@ input[type="range"]::-moz-range-thumb {
 }
 .history-row span { color: var(--muted); }
 .empty-state { color: var(--muted); font-family: var(--mono); font-size: .72rem; padding: 25px 0; }
-.applications-list { border-top: 1px solid var(--line); }
-.applications-list article { align-items: start; border-bottom: 1px solid var(--line); display: grid; gap: 30px; grid-template-columns: 60px 1fr; padding: 35px 0; }
-.applications-list article > span { color: var(--amber); font-family: var(--mono); }
-.applications-list h2 { font-size: 1.8rem; margin: 0 0 8px; }
-.applications-list p { color: var(--muted); line-height: 1.7; margin: 0; max-width: 720px; }
+.applications-list {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 24px;
+}
+.applications-list article {
+  align-items: start;
+  border-bottom: 0;
+  display: grid;
+  gap: 30px;
+  grid-template-columns: 60px 1fr;
+  padding: 32px;
+  background: linear-gradient(135deg, rgba(20, 24, 25, 0.4), rgba(15, 19, 20, 0.2));
+  border-left: 4px solid var(--amber);
+  border-radius: 6px;
+  transition: all .3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.applications-list article::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, var(--amber-glow), transparent);
+  opacity: 0;
+  transition: opacity .3s ease;
+  z-index: 0;
+  pointer-events: none;
+}
+.applications-list article:hover {
+  transform: translateX(6px);
+  box-shadow: 0 8px 24px rgba(240, 167, 46, 0.2);
+  background: linear-gradient(135deg, rgba(25, 30, 31, 0.6), rgba(20, 24, 25, 0.4));
+}
+.applications-list article:hover::before { opacity: 0.4; }
+.applications-list article > span {
+  color: var(--amber);
+  font-family: var(--mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+.applications-list h2 {
+  font-size: 1.8rem;
+  margin: 0 0 8px;
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, var(--text), var(--text-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.applications-list p {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0;
+  max-width: 720px;
+  position: relative;
+  z-index: 1;
+}
 footer { border-top: 1px solid var(--line); color: var(--muted); display: flex; font-family: var(--mono); font-size: .58rem; justify-content: space-between; padding: 24px clamp(20px, 4vw, 64px); }
 .toast {
   background: linear-gradient(135deg, var(--text), #dddad2);
