@@ -502,7 +502,25 @@ input[type="range"]::-moz-range-thumb {
   overflow-x: auto;
 }
 .history-list { margin-top: 20px; }
-.history-row { align-items: center; border-bottom: 1px solid var(--line-soft); display: grid; font-family: var(--mono); font-size: .7rem; grid-template-columns: 2fr repeat(5, 1fr); padding: 15px 0; }
+.history-row {
+  align-items: center;
+  border-bottom: 1px solid var(--line-soft);
+  display: grid;
+  font-family: var(--mono);
+  font-size: .7rem;
+  grid-template-columns: 2fr repeat(5, 1fr);
+  padding: 15px;
+  background: linear-gradient(135deg, rgba(16, 19, 20, 0.3), rgba(21, 25, 26, 0.1));
+  border-radius: 4px;
+  transition: all .2s ease;
+  margin-bottom: 8px;
+  border-bottom: 0;
+}
+.history-row:hover {
+  background: linear-gradient(135deg, rgba(20, 24, 25, 0.5), rgba(21, 25, 26, 0.3));
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
 .history-row span { color: var(--muted); }
 .empty-state { color: var(--muted); font-family: var(--mono); font-size: .72rem; padding: 25px 0; }
 .applications-list { border-top: 1px solid var(--line); }
