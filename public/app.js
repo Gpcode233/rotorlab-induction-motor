@@ -496,10 +496,10 @@ async function api(url, options = {}) {
 
 function startHostedSimulation() {
   const motor = {
-    id: "im-4p-22kw",
+    id: "im-4p-50hp",
     name: "Industrial 3-Phase Motor",
-    ratedPowerKw: 2.2,
-    ratedVoltage: 415,
+    ratedPowerKw: 50,
+    ratedVoltage: 460,
     frequency: 50,
     poles: 4,
     ratedSpeedRpm: 1440,

@@ -105,9 +105,7 @@ input[type="email"], input[type="password"], input[type="text"], input[type="num
   caret-color: var(--amber);
 }
 input:focus {
-  border-color: var(--amber) !important;
-  box-shadow: 0 0 12px var(--amber-glow) !important;
-  background: #0a0c0d !important;
+  outline: none;
 }
 input::placeholder {
   color: rgba(255, 255, 255, 0.6) !important;
@@ -404,10 +402,6 @@ input[type="range"]::-webkit-slider-thumb {
   cursor: pointer;
   box-shadow: 0 2px 8px var(--amber-glow);
   transition: all .2s ease;
-}
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 4px 15px var(--amber-glow);
 }
 input[type="range"]::-moz-range-thumb {
   width: 18px;

@@ -25,7 +25,7 @@ npm test
 ## Demonstration
 
 1. Create an operator account and sign in.
-2. Explain the selected 2.2 kW, 415 V, four-pole motor.
+2. Explain the selected 50 HP, 460 V, four-pole motor.
 3. Show that its synchronous speed is `120 × 50 / 4 = 1500 RPM`.
 4. Start the motor at a target of 1400 RPM.
 5. Point out the noisy raw sensor trace and smoother FIR-filtered trace.
