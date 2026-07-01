@@ -416,11 +416,49 @@ input[type="range"]::-moz-range-thumb {
 .parameter-list span { color: var(--muted); display: block; font-family: var(--mono); font-size: .6rem; margin-bottom: 8px; }
 .parameter-list strong { font-family: var(--mono); font-size: 1rem; font-weight: 500; }
 
-.analysis-metrics { border-bottom: 1px solid var(--line); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(4, 1fr); }
-.analysis-metrics article { border-left: 1px solid var(--line); padding: 28px; }
-.analysis-metrics article:first-child { border: 0; padding-left: 0; }
-.analysis-metrics span { color: var(--muted); font-family: var(--mono); font-size: .65rem; text-transform: uppercase; }
-.analysis-metrics strong { display: block; font-family: var(--mono); font-size: 2rem; font-weight: 500; margin: 18px 0 10px; }
+.analysis-metrics {
+  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(16, 19, 20, 0.3), rgba(21, 25, 26, 0.1));
+}
+.analysis-metrics article {
+  border-left: 1px solid var(--line);
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(20, 24, 25, 0.4), rgba(15, 19, 20, 0.2));
+  border-radius: 6px;
+  border-left: 3px solid var(--amber);
+  transition: all .3s ease;
+}
+.analysis-metrics article:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(240, 167, 46, 0.15);
+  background: linear-gradient(135deg, rgba(25, 30, 31, 0.6), rgba(20, 24, 25, 0.4));
+}
+.analysis-metrics article:first-child { border-left: 3px solid var(--amber); }
+.analysis-metrics span {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  display: block;
+  margin-bottom: 8px;
+}
+.analysis-metrics strong {
+  display: block;
+  font-family: var(--mono);
+  font-size: 2rem;
+  font-weight: 500;
+  margin: 12px 0 10px;
+  background: linear-gradient(135deg, var(--amber), #ffc35a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 .analysis-metrics p, .theory-grid p { color: var(--muted); font-size: .75rem; line-height: 1.7; }
 .theory-grid { display: grid; gap: 70px; grid-template-columns: 1fr 1fr; margin-top: 70px; }
 .theory-grid article { border-left: 1px solid var(--line); padding-left: 28px; }
