@@ -304,10 +304,37 @@ input[type="range"]::-moz-range-thumb {
 .filter-grid { display: grid; gap: 9px; grid-template-columns: 1fr; margin-bottom: 20px; }
 .filter-grid label { margin: 0; }
 .filter-grid input { font-family: var(--mono); padding: 10px; }
-.toggle { background: #303536; border: 0; border-radius: 20px; height: 24px; padding: 3px; width: 43px; }
-.toggle i { background: #909694; border-radius: 50%; display: block; height: 18px; transition: transform .2s; width: 18px; }
-.toggle.active { background: var(--amber-soft); }
-.toggle.active i { background: var(--amber); transform: translateX(19px); }
+.toggle {
+  background: linear-gradient(135deg, #2a2d2e, #323536);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  height: 24px;
+  padding: 3px;
+  width: 43px;
+  cursor: pointer;
+  transition: all .3s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+.toggle i {
+  background: #909694;
+  border-radius: 50%;
+  display: block;
+  height: 18px;
+  transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 18px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.toggle.active {
+  background: linear-gradient(135deg, var(--amber-soft), rgba(240, 167, 46, 0.1));
+  border-color: var(--amber);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 12px var(--amber-glow);
+}
+.toggle.active i {
+  background: var(--amber);
+  transform: translateX(19px);
+  box-shadow: 0 2px 8px var(--amber-glow);
+}
 .pid-presets { margin: 26px 0 10px; }
 .preset-btns { display: flex; gap: 6px; margin-top: 8px; }
 .preset-btn {
