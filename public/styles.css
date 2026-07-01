@@ -178,9 +178,30 @@ nav { align-self: stretch; display: flex; gap: 28px; }
 .connection-dot { background: var(--green); border-radius: 50%; box-shadow: 0 0 10px var(--green); height: 6px; width: 6px; }
 .icon-btn { background: none; border: 0; color: var(--muted); font-size: 1rem; margin-left: 8px; }
 main { margin: 0 auto; max-width: 1600px; padding: 52px clamp(20px, 4vw, 64px) 80px; }
-.workspace-heading { align-items: flex-end; display: flex; justify-content: space-between; margin-bottom: 40px; }
-.workspace-heading h1 { font-size: clamp(2rem, 3.5vw, 4rem); letter-spacing: -.06em; line-height: 1; margin: 0; }
-.workspace-heading h1 span { color: var(--muted); font-weight: 400; }
+.workspace-heading {
+  align-items: flex-end;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid var(--line);
+}
+.workspace-heading h1 {
+  font-size: clamp(2rem, 3.5vw, 4rem);
+  letter-spacing: -.06em;
+  line-height: 1;
+  margin: 0;
+  background: linear-gradient(135deg, var(--text), var(--text-secondary), var(--amber));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.workspace-heading h1 span {
+  color: var(--muted);
+  font-weight: 400;
+  background: none;
+  -webkit-text-fill-color: var(--muted);
+}
 .run-actions { display: flex; gap: 9px; }
 .play-icon { font-size: .6rem; margin-right: 7px; }
 
