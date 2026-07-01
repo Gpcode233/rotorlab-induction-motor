@@ -253,8 +253,22 @@ button:disabled { cursor: not-allowed; opacity: .3; }
 .target-key { background: #68706e; }
 .filtered-key { background: var(--amber); }
 .raw-key { background: #02bd88; }
-.chart-wrap { height: 360px; margin-top: 28px; width: 100%; }
-#speedChart { height: 100%; width: 100%; }
+.chart-wrap {
+  height: 360px;
+  margin-top: 28px;
+  width: 100%;
+  background: linear-gradient(135deg, rgba(16, 19, 20, 0.5), rgba(21, 25, 26, 0.3));
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+#speedChart {
+  height: calc(100% - 32px);
+  width: 100%;
+  border-radius: 4px;
+}
 .chart-footer { color: var(--muted); display: flex; font-family: var(--mono); font-size: .6rem; justify-content: space-between; }
 .controls-region { border-left: 1px solid var(--line); padding-left: 32px; }
 .controls-region > label { margin-top: 28px; }
