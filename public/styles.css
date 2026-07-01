@@ -436,8 +436,30 @@ input[type="range"]::-moz-range-thumb {
 .applications-list h2 { font-size: 1.8rem; margin: 0 0 8px; }
 .applications-list p { color: var(--muted); line-height: 1.7; margin: 0; max-width: 720px; }
 footer { border-top: 1px solid var(--line); color: var(--muted); display: flex; font-family: var(--mono); font-size: .58rem; justify-content: space-between; padding: 24px clamp(20px, 4vw, 64px); }
-.toast { background: var(--text); bottom: 28px; color: var(--bg); font-size: .75rem; opacity: 0; padding: 12px 18px; pointer-events: none; position: fixed; right: 28px; transform: translateY(15px); transition: .25s; z-index: 10; }
-.toast.show { opacity: 1; transform: translateY(0); }
+.toast {
+  background: linear-gradient(135deg, var(--text), #dddad2);
+  bottom: 28px;
+  color: var(--bg);
+  font-size: .75rem;
+  opacity: 0;
+  padding: 14px 20px;
+  pointer-events: none;
+  position: fixed;
+  right: 28px;
+  transform: translateY(15px) scale(0.95);
+  transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  font-weight: 500;
+  letter-spacing: .02em;
+  backdrop-filter: blur(12px);
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
 
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 900px) {
