@@ -61,7 +61,18 @@ input { transition: all .2s ease; }
 .auth-form-wrap { max-width: 430px; width: 100%; }
 .auth-form-wrap h2 { font-size: 2rem; letter-spacing: -.04em; margin: 80px 0 6px; }
 form { margin-top: 32px; }
-label { color: #c8ccc9; display: block; font-size: .76rem; font-weight: 600; letter-spacing: .02em; margin-bottom: 20px; }
+label {
+  color: #c8ccc9;
+  display: block;
+  font-size: .76rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #d4d2ca, #c8ccc9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 input[type="email"], input[type="password"], input[type="text"], input[type="number"] {
   background: linear-gradient(135deg, rgba(16, 19, 20, 0.8), rgba(21, 25, 26, 0.6));
   border: 1px solid var(--line);
@@ -74,10 +85,14 @@ input[type="email"], input[type="password"], input[type="text"], input[type="num
   width: 100%;
   backdrop-filter: blur(8px);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+  caret-color: var(--amber);
 }
 input:focus {
   border-color: var(--amber);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 12px var(--amber-glow);
+}
+input::placeholder {
+  color: rgba(141, 149, 147, 0.5);
 }
 .form-error { color: var(--red); font-size: .78rem; min-height: 18px; }
 .primary-btn, .secondary-btn {
@@ -309,7 +324,18 @@ button:disabled { cursor: not-allowed; opacity: .3; }
 .chart-footer { color: var(--muted); display: flex; font-family: var(--mono); font-size: .6rem; justify-content: space-between; }
 .controls-region { border-left: 1px solid var(--line); padding-left: 32px; }
 .controls-region > label { margin-top: 28px; }
-output { color: var(--amber); float: right; font-family: var(--mono); font-size: .7rem; }
+output {
+  color: var(--amber);
+  float: right;
+  font-family: var(--mono);
+  font-size: .7rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--amber), #ffc35a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 4px rgba(240, 167, 46, 0.2);
+}
 input[type="range"] {
   accent-color: var(--amber);
   display: block;
