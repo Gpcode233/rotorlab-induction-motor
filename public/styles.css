@@ -239,9 +239,31 @@ main { margin: 0 auto; max-width: 1600px; padding: 52px clamp(20px, 4vw, 64px) 8
 .stability-card { border-left: 0; border-top: 1px solid var(--line); grid-column: 1 / -1; }
 .stability-card .status-text { font-family: var(--sans); font-size: 1.5rem; letter-spacing: -.04em; }
 button:disabled { cursor: not-allowed; opacity: .3; }
-.status-line { align-items: center; display: flex; font-family: var(--mono); font-size: .65rem; gap: 7px; margin-top: 18px; }
-.status-line i { background: var(--muted); border-radius: 50%; height: 6px; width: 6px; }
-.status-line b { color: var(--muted); font-weight: 400; }
+.status-line {
+  align-items: center;
+  display: flex;
+  font-family: var(--mono);
+  font-size: .65rem;
+  gap: 7px;
+  margin-top: 18px;
+}
+.status-line i {
+  background: var(--muted);
+  border-radius: 50%;
+  height: 6px;
+  width: 6px;
+  animation: pulse-dot 2s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(141, 149, 147, 0.4);
+}
+.status-line b {
+  color: var(--muted);
+  font-weight: 400;
+  transition: color .3s ease;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
 
 .control-grid { display: grid; gap: 54px; grid-template-columns: minmax(0, 1fr) 310px; }
 .section-heading { align-items: flex-start; display: flex; justify-content: space-between; }
