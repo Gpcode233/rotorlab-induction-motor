@@ -587,7 +587,19 @@ input[type="range"]::-moz-range-thumb {
   position: relative;
   z-index: 1;
 }
-footer { border-top: 1px solid var(--line); color: var(--muted); display: flex; font-family: var(--mono); font-size: .58rem; justify-content: space-between; padding: 24px clamp(20px, 4vw, 64px); }
+footer {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  display: flex;
+  font-family: var(--mono);
+  font-size: .58rem;
+  justify-content: space-between;
+  padding: 24px clamp(20px, 4vw, 64px);
+  background: linear-gradient(180deg, rgba(10, 12, 13, 0), rgba(10, 12, 13, 0.8));
+  backdrop-filter: blur(12px);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
 .toast {
   background: linear-gradient(135deg, var(--text), #dddad2);
   bottom: 28px;
